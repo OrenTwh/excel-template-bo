@@ -1,0 +1,68 @@
+ul.pagination {
+    overflow: auto;
+}
+
+table.table.dataTable tr td {
+    vertical-align: middle;
+    white-space:nowrap;
+}
+
+.listing-filter {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.dt-length label{
+    margin-right: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.dataTables_filter {
+    display: none;
+}
+
+.dropzone.is-invalid {
+    border-color: #e85347;
+}
+
+.icon-status-info:after {
+    animation: pulse-animation 1s infinite;
+}
+
+.address-icon {
+    font-size: 20px;
+    cursor: pointer;
+    color: #d9ae80;
+}
+
+@keyframes pulse-animation {
+    0% {
+        box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+    }
+}
+
+.nk-notification-item.read {
+    opacity: .5;
+}
+
+@media only screen and (max-width: 600px) {
+    .listing-filter {
+        grid-template-columns: 1fr;
+    }
+}
+
+.expiry-status{
+    width: 8px; 
+    height: 8px;
+    display: inline-block; 
+    border-radius: 50%; 
+    margin-right: 20%;
+}

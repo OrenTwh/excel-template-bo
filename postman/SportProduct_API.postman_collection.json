@@ -1,0 +1,312 @@
+{
+  "info": {
+    "name": "Sport Product API",
+    "description": "Endpoints for browsing products, managing the cart, and placing orders. Base URL: {{base_url}}/api/v1/sport-products",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",   "value": "http://localhost", "type": "string" },
+    { "key": "auth_token", "value": "",                 "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Catalogue",
+      "item": [
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "categories"]
+            },
+            "description": "Returns top-level categories with their immediate children."
+          }
+        },
+        {
+          "name": "Get Category Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/categories/details?id={{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "categories", "details"],
+              "query": [
+                { "key": "id", "value": "{{category_id}}", "description": "Encrypted category ID (required)" }
+              ]
+            },
+            "description": "Returns a single category with child categories. Returns 422 if id is missing, 404 if not found."
+          }
+        },
+        {
+          "name": "Get Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/?per_page=15&sort=sequence",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", ""],
+              "query": [
+                { "key": "per_page",    "value": "15",       "description": "Max 50, default 15" },
+                { "key": "category_id", "value": "",         "description": "Encrypted category ID (optional)", "disabled": true },
+                { "key": "sport_id",    "value": "",         "description": "Encrypted sport ID (optional)",    "disabled": true },
+                { "key": "search",      "value": "",         "description": "Product name search (optional)",   "disabled": true },
+                { "key": "min_price",   "value": "",         "description": "Min variant price (optional)",     "disabled": true },
+                { "key": "max_price",   "value": "",         "description": "Max variant price (optional)",     "disabled": true },
+                { "key": "in_stock",    "value": "true",     "description": "Filter in-stock only (optional)",  "disabled": true },
+                { "key": "sort",        "value": "sequence", "description": "price_asc | price_desc | newest | sequence" },
+                { "key": "grouped",     "value": "true",     "description": "When true + category_id is a parent, returns products grouped by sub-category (no pagination)", "disabled": true }
+              ]
+            },
+            "description": "Paginated product list with variants and stock. Supports category/sport/price/stock filters, sorting, and grouped mode."
+          }
+        },
+        {
+          "name": "Get Product Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/details?id={{product_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "details"],
+              "query": [
+                { "key": "id", "value": "{{product_id}}", "description": "Encrypted product ID (required)" }
+              ]
+            },
+            "description": "Full product detail including variants with SKU and stock. Returns 422 if id missing, 404 if not found."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart"]
+            },
+            "description": "Returns the authenticated user's cart with item subtotals and cart total. Creates an empty cart if none exists."
+          }
+        },
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json",      "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"variant_id\": \"{{variant_id}}\",\n  \"quantity\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart", "add"]
+            },
+            "description": "Adds a variant to cart. Increments quantity if already present. Returns 404 if variant not found, 422 if insufficient stock."
+          }
+        },
+        {
+          "name": "Update Cart Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json",      "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_id\": \"{{cart_item_id}}\",\n  \"quantity\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart/update",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart", "update"]
+            },
+            "description": "Sets the quantity of a cart item. Returns 404 if item not found, 422 if insufficient stock or variant unavailable."
+          }
+        },
+        {
+          "name": "Remove Cart Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json",      "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item_id\": \"{{cart_item_id}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart/remove",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart", "remove"]
+            },
+            "description": "Removes a single item from the cart. Returns 422 if item_id is missing."
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart/clear",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart", "clear"]
+            },
+            "description": "Deletes all items from the authenticated user's cart."
+          }
+        },
+        {
+          "name": "Apply Voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json",      "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"promo_code\": \"SAVE10\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart/voucher",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart", "voucher"]
+            },
+            "description": "Applies a promo code to the cart. Returns 404 if voucher not found/expired, 422 if minimum spend not met."
+          }
+        },
+        {
+          "name": "Remove Voucher",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/cart/voucher",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "cart", "voucher"]
+            },
+            "description": "Detaches any applied voucher from the authenticated user's cart."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/orders?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "orders"],
+              "query": [
+                { "key": "per_page", "value": "15", "description": "Default 15" }
+              ]
+            },
+            "description": "Paginated list of the authenticated user's orders (id, status, total, items_count)."
+          }
+        },
+        {
+          "name": "Get Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/orders/details?id={{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "orders", "details"],
+              "query": [
+                { "key": "id", "value": "{{order_id}}", "description": "Encrypted order ID (required)" }
+              ]
+            },
+            "description": "Full order detail with line items. Returns 404 if not found or belongs to another user."
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json",      "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"variant_id\": \"{{variant_id}}\", \"quantity\": 1 }\n  ],\n  \"notes\": \"Please gift wrap.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/orders/create",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "orders", "create"]
+            },
+            "description": "Creates a pending order. Validates stock and reserves inventory for each variant. Automatically applies any voucher attached to the cart. Computes subtotal, discount, SST (6%), shipping (RM10), and total. Returns 422 for duplicate variant_ids, missing variants, or insufficient stock. Returns 201 with order id, order_reference, created_at, and total."
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{auth_token}}", "type": "text" },
+              { "key": "Content-Type",  "value": "application/json",      "type": "text" },
+              { "key": "Accept",        "value": "application/json",      "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{order_id}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/sport-products/orders/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "sport-products", "orders", "cancel"]
+            },
+            "description": "Cancels a pending order and releases reserved stock. Returns 404 if not found, 422 if order is not in pending status."
+          }
+        }
+      ]
+    }
+  ]
+}
