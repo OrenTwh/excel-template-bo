@@ -3,6 +3,8 @@
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 use App\Http\Controllers\Admin\{
+    BoDashboardController,
+    FxController,
     AdministratorController,
     AnnouncementController,
     DateClosureController,
@@ -74,6 +76,73 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
             Route::get( '/', function() {
                 return redirect()->route( 'admin.dashboard' );
             } )->name( 'admin.home' );
+
+            // ── Docs ─────────────────────────────────────────────────────────────
+            Route::get( 'docs', function() { return view('docs.index'); } )->name( 'docs.index' );
+            // ────────────────────────────────────────────────────────────────────
+
+            // ── FX Spreadsheet ───────────────────────────────────────────────────
+            Route::prefix( 'fx' )->group( function() {
+                Route::get(  '/',                              [ FxController::class, 'index'                  ] )->name( 'fx.index' );
+
+                // Sheet data
+                Route::get(   'master',                        [ FxController::class, 'master'                 ] )->name( 'fx.master' );
+                Route::patch( 'master-daily',                  [ FxController::class, 'masterDailyUpdate'      ] )->name( 'fx.master_daily.update' );
+                Route::get(  'detail',                         [ FxController::class, 'detail'                 ] )->name( 'fx.detail' );
+                Route::get(  'customer/{id}',                  [ FxController::class, 'customer'               ] )->name( 'fx.customer' );
+
+                // Customers
+                Route::get(  'customers',                      [ FxController::class, 'customerList'           ] )->name( 'fx.customers' );
+                Route::post( 'customers',                      [ FxController::class, 'customerStore'          ] )->name( 'fx.customers.store' );
+                Route::post( 'customers/{id}/toggle-today',    [ FxController::class, 'customerToggleCheckToday'] )->name( 'fx.customers.toggle' );
+
+                // Transactions
+                Route::post( 'transactions',                   [ FxController::class, 'transactionStore'       ] )->name( 'fx.transactions.store' );
+                Route::put(  'transactions/{id}',              [ FxController::class, 'transactionUpdate'      ] )->name( 'fx.transactions.update' );
+                Route::delete( 'transactions/{id}',            [ FxController::class, 'transactionDelete'      ] )->name( 'fx.transactions.delete' );
+
+                // Arrangements
+                Route::post( 'arrangements',                   [ FxController::class, 'arrangementStore'       ] )->name( 'fx.arrangements.store' );
+                Route::put(  'arrangements/{id}',              [ FxController::class, 'arrangementUpdate'      ] )->name( 'fx.arrangements.update' );
+                Route::delete( 'arrangements/{id}',            [ FxController::class, 'arrangementDelete'      ] )->name( 'fx.arrangements.delete' );
+            } );
+            // ────────────────────────────────────────────────────────────────────
+
+            // ── BO Simplified Dashboard ──────────────────────────────────────────
+            Route::prefix( 'bo' )->group( function() {
+                Route::get(  '/',                          [ BoDashboardController::class, 'index'                ] )->name( 'bo.index' );
+                Route::get(  'announcement',               [ BoDashboardController::class, 'announcement'         ] )->name( 'bo.announcement' );
+
+                // Transactions
+                Route::get(  'transactions',               [ BoDashboardController::class, 'transactions'         ] )->name( 'bo.transactions' );
+                Route::get(  'transactions/export',        [ BoDashboardController::class, 'transactionExport'    ] )->name( 'bo.transactions.export' );
+
+                // Banks
+                Route::get(  'banks',                      [ BoDashboardController::class, 'banks'                ] )->name( 'bo.banks' );
+                Route::post( 'banks',                      [ BoDashboardController::class, 'bankStore'            ] )->name( 'bo.banks.store' );
+                Route::put(  'banks/{id}',                 [ BoDashboardController::class, 'bankUpdate'           ] )->name( 'bo.banks.update' );
+                Route::put(  'banks/{id}/amount',          [ BoDashboardController::class, 'bankUpdateAmount'     ] )->name( 'bo.banks.amount' );
+                Route::get(  'banks/{id}/history',         [ BoDashboardController::class, 'bankHistory'          ] )->name( 'bo.banks.history' );
+
+                // Bank Transactions
+                Route::get(  'bank-transactions',          [ BoDashboardController::class, 'bankTransactions'     ] )->name( 'bo.bank_transactions' );
+                Route::post( 'bank-transactions',          [ BoDashboardController::class, 'bankTransactionStore' ] )->name( 'bo.bank_transactions.store' );
+                Route::put(  'bank-transactions/{id}',     [ BoDashboardController::class, 'bankTransactionUpdate'] )->name( 'bo.bank_transactions.update' );
+                Route::delete( 'bank-transactions/{id}',   [ BoDashboardController::class, 'bankTransactionDelete'] )->name( 'bo.bank_transactions.delete' );
+
+                // Cashflow
+                Route::get(  'cashflow',                   [ BoDashboardController::class, 'cashflow'             ] )->name( 'bo.cashflow' );
+
+                // Admins
+                Route::get(  'admins',                     [ BoDashboardController::class, 'admins'               ] )->name( 'bo.admins' );
+                Route::post( 'admins',                     [ BoDashboardController::class, 'adminStore'           ] )->name( 'bo.admins.store' );
+                Route::put(  'admins/{id}',                [ BoDashboardController::class, 'adminUpdate'          ] )->name( 'bo.admins.update' );
+
+                // Menu / settings
+                Route::post( 'update-password',            [ BoDashboardController::class, 'updatePassword'       ] )->name( 'bo.update_password' );
+                Route::post( 'logout',                     [ BoDashboardController::class, 'logout'               ] )->name( 'bo.logout' );
+            } );
+            // ────────────────────────────────────────────────────────────────────
 
             Route::post( 'file/upload', [ FileController::class, 'upload' ] )->withoutMiddleware( [\App\Http\Middleware\VerifyCsrfToken::class] )->name( 'admin.file.upload' );
 
