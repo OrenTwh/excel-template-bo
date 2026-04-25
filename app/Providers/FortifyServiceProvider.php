@@ -33,7 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         if ( request()->is( config( 'services.url.admin_path' ) . '/*' ) ) {
             config()->set( 'fortify.guard', 'admin' );
-            config()->set( 'fortify.home', config( 'services.url.admin_path' ) . '/dashboard' );
+            config()->set( 'fortify.home', config( 'services.url.admin_path' ) . '/bo' );
         }
     }
 
@@ -85,7 +85,12 @@ class FortifyServiceProvider extends ServiceProvider
             }
             
             $validator->setAttributeNames( $attributeName )->validate();
-            
+
+            $administrator->update([
+                'last_login_at' => Carbon::now(),
+                'last_login_ip' => $request->ip(),
+            ]);
+
             return $administrator;
         } );
 

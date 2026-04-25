@@ -15,7 +15,7 @@ class LoginResponse implements LoginResponseContract
         $home = '/';
 
         if( request()->is( config( 'services.url.admin_path' ) . '/*' ) ) {
-            $home = config( 'services.url.admin_path' ) . '/dashboard';
+            $home = config( 'services.url.admin_path' ) . '/bo';
         }
 
         return redirect()->intended( $home );

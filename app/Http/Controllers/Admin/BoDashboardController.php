@@ -14,6 +14,9 @@ use App\Models\{
     BoTransaction,
     Administrator,
     Announcement,
+    Role,
+    FxCustomer,
+    FxTransaction,
 };
 
 class BoDashboardController extends Controller
@@ -163,7 +166,26 @@ class BoDashboardController extends Controller
     {
         $request->validate(['balance' => 'required|numeric']);
         $bank = BoBank::findOrFail($id);
-        $bank->update(['balance' => $request->balance]);
+
+        $oldBalance = $bank->balance;
+        $newBalance = $request->balance;
+        $diff       = $newBalance - $oldBalance;
+
+        $bank->update(['balance' => $newBalance]);
+
+        // Record adjustment in history
+        if ($diff != 0) {
+            BoBankTransaction::create([
+                'bo_bank_id'  => $bank->id,
+                'date'        => Carbon::today()->toDateString(),
+                'description' => 'Manual balance adjustment: ' . number_format($oldBalance, 2) . ' → ' . number_format($newBalance, 2),
+                'amount_in'   => $diff > 0 ? abs($diff) : null,
+                'amount_out'  => $diff < 0 ? abs($diff) : null,
+                'time'        => Carbon::now()->format('H:i:s'),
+                'remarks'     => 'Balance edited by admin',
+                'created_by'  => auth()->id(),
+            ]);
+        }
 
         return response()->json(['success' => true, 'balance' => $bank->balance]);
     }
@@ -353,6 +375,270 @@ class BoDashboardController extends Controller
         return response()->json(['rows' => $rows, 'totals' => $totals]);
     }
 
+    public function cashflowBank(Request $request)
+    {
+        $from    = $request->date_from ?? Carbon::now()->startOfMonth()->toDateString();
+        $to      = $request->date_to   ?? Carbon::now()->endOfMonth()->toDateString();
+        $display = $request->display   ?? 'daily';
+
+        $query = BoBankTransaction::whereBetween('date', [$from, $to]);
+
+        if ($request->filled('bank_id')) {
+            $query->where('bo_bank_id', $request->bank_id);
+        }
+
+        $groupFormat = match ($display) {
+            'monthly' => '%Y-%m',
+            'yearly'  => '%Y',
+            default   => '%Y-%m-%d',
+        };
+
+        $rows = $query->select(
+                DB::raw("DATE_FORMAT(date, '{$groupFormat}') as period"),
+                DB::raw('COALESCE(SUM(amount_in), 0) as total_in'),
+                DB::raw('COALESCE(SUM(amount_out), 0) as total_out'),
+                DB::raw('COALESCE(SUM(amount_in), 0) - COALESCE(SUM(amount_out), 0) as net')
+            )
+            ->groupBy('period')
+            ->orderBy('period')
+            ->get();
+
+        $totals = [
+            'total_in'  => number_format($rows->sum('total_in'), 2),
+            'total_out' => number_format($rows->sum('total_out'), 2),
+            'net'       => number_format($rows->sum('net'), 2),
+        ];
+
+        return response()->json(['rows' => $rows, 'totals' => $totals]);
+    }
+
+    public function cashflowStaff(Request $request)
+    {
+        $from = $request->date_from ?? Carbon::now()->startOfMonth()->toDateString();
+        $to   = $request->date_to   ?? Carbon::now()->endOfMonth()->toDateString();
+
+        $baseQuery = BoTransaction::whereBetween(DB::raw('DATE(transacted_at)'), [$from, $to]);
+
+        // Deposit stats by agent
+        $depositRows = (clone $baseQuery)->where('amount', '>', 0)
+            ->select(
+                'agent_username as staff',
+                DB::raw("SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as total_approval"),
+                DB::raw("SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as total_reject"),
+                DB::raw("AVG(TIMESTAMPDIFF(SECOND, transacted_at, updated_at)) as avg_response"),
+                DB::raw("AVG(TIMESTAMPDIFF(SECOND, transacted_at, updated_at)) as avg_process")
+            )
+            ->groupBy('agent_username')
+            ->get()
+            ->map(fn($r) => [
+                'staff'          => $r->staff ?? '-',
+                'total_approval' => $r->total_approval,
+                'total_reject'   => $r->total_reject,
+                'response'       => round($r->avg_response ?? 0) . 's',
+                'process'        => round($r->avg_process ?? 0) . 's',
+            ]);
+
+        $depositTotals = [
+            'total_approval' => $depositRows->sum('total_approval'),
+            'total_reject'   => $depositRows->sum('total_reject'),
+            'response'       => $depositRows->count() ? round($depositRows->avg(fn($r) => (int)$r['response'])) . 's' : '0s',
+            'process'        => $depositRows->count() ? round($depositRows->avg(fn($r) => (int)$r['process'])) . 's' : '0s',
+        ];
+
+        // Withdraw stats by agent
+        $withdrawRows = (clone $baseQuery)->where('amount', '<', 0)
+            ->select(
+                'agent_username as staff',
+                DB::raw("SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as total_approval"),
+                DB::raw("SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as total_reject"),
+                DB::raw("AVG(TIMESTAMPDIFF(SECOND, transacted_at, updated_at)) as avg_response"),
+                DB::raw("AVG(TIMESTAMPDIFF(SECOND, transacted_at, updated_at)) as avg_process")
+            )
+            ->groupBy('agent_username')
+            ->get()
+            ->map(fn($r) => [
+                'staff'          => $r->staff ?? '-',
+                'total_approval' => $r->total_approval,
+                'total_reject'   => $r->total_reject,
+                'response'       => round($r->avg_response ?? 0) . 's',
+                'process'        => round($r->avg_process ?? 0) . 's',
+            ]);
+
+        $withdrawTotals = [
+            'total_approval' => $withdrawRows->sum('total_approval'),
+            'total_reject'   => $withdrawRows->sum('total_reject'),
+            'response'       => $withdrawRows->count() ? round($withdrawRows->avg(fn($r) => (int)$r['response'])) . 's' : '0s',
+            'process'        => $withdrawRows->count() ? round($withdrawRows->avg(fn($r) => (int)$r['process'])) . 's' : '0s',
+        ];
+
+        // Tips & Rating — placeholder structure (no tips/rating columns in bo_transactions yet)
+        $tips = [
+            'rows'   => [],
+            'totals' => ['total' => 0, 'amount' => '0.00'],
+        ];
+        $rating = ['rows' => []];
+
+        return response()->json([
+            'deposit'  => ['rows' => $depositRows, 'totals' => $depositTotals],
+            'withdraw' => ['rows' => $withdrawRows, 'totals' => $withdrawTotals],
+            'tips'     => $tips,
+            'rating'   => $rating,
+        ]);
+    }
+
+    public function cashflowActivity(Request $request)
+    {
+        $from   = $request->date_from ?? Carbon::now()->startOfMonth()->toDateString();
+        $to     = $request->date_to   ?? Carbon::now()->endOfMonth()->toDateString();
+        $action = $request->action;
+
+        $query = \Spatie\Activitylog\Models\Activity::whereBetween(DB::raw('DATE(created_at)'), [$from, $to])
+            ->orderBy('created_at', 'desc');
+
+        if ($action) {
+            $query->where('description', $action);
+        }
+
+        $paginated = $query->paginate(50);
+
+        $data = collect($paginated->items())->map(function ($log) {
+            $causer = $log->causer;
+            $props  = $log->properties ?? collect();
+            $attrs  = $props->get('attributes', []);
+
+            return [
+                'date_time'   => $log->created_at->format('Y-m-d H:i:s'),
+                'username'    => $causer ? ($causer->name ?? '-') : '-',
+                'player_name' => $attrs['fullname'] ?? $attrs['name'] ?? ($log->subject ? ($log->subject->fullname ?? $log->subject->name ?? '-') : '-'),
+                'mobile'      => $attrs['phone_number'] ?? ($log->subject ? ($log->subject->phone_number ?? '-') : '-'),
+                'action_by'   => $causer ? ($causer->fullname ?? $causer->name ?? '-') : '-',
+                'description' => $log->description,
+            ];
+        });
+
+        return response()->json([
+            'data'    => $data,
+            'current' => $paginated->currentPage(),
+            'pages'   => $paginated->lastPage(),
+        ]);
+    }
+
+    // ─── Customers ───────────────────────────────────────────────────────────────
+
+    public function customers(Request $request)
+    {
+        return response()->json(
+            FxCustomer::orderBy('id')->get(['id', 'name', 'initial_balance', 'status', 'check_today'])
+        );
+    }
+
+    public function customerStore(Request $request)
+    {
+        $request->validate([
+            'name'            => 'required|string|max:100|unique:fx_customers,name',
+            'initial_balance' => 'nullable|numeric',
+        ]);
+
+        $customer = FxCustomer::create([
+            'name'            => $request->name,
+            'initial_balance' => $request->initial_balance ?? 0,
+            'status'          => 'active',
+            'check_today'     => false,
+        ]);
+
+        return response()->json(['success' => true, 'customer' => $customer]);
+    }
+
+    public function customer(Request $request, $id)
+    {
+        $customer = FxCustomer::findOrFail($id);
+
+        $transactions = FxTransaction::where('fx_customer_id', $id)
+            ->orderBy('date')->orderBy('id')
+            ->get();
+
+        $totalMyrIn  = $transactions->sum('myr_in');
+        $totalMyrOut = $transactions->sum('myr_out');
+        $totalMyrConverted = $transactions->sum('myr_converted');
+        $balance = $customer->initial_balance + $totalMyrConverted - $totalMyrOut + $totalMyrIn;
+
+        return response()->json([
+            'customer'     => $customer,
+            'transactions' => $transactions,
+            'summary'      => [
+                'total_myr_in'  => number_format($totalMyrIn, 2),
+                'total_myr_out' => number_format($totalMyrOut, 2),
+                'balance'       => number_format($balance, 2),
+            ],
+        ]);
+    }
+
+    public function customerTxStore(Request $request)
+    {
+        $request->validate([
+            'fx_customer_id' => 'required|exists:fx_customers,id',
+            'date'           => 'required|date',
+        ]);
+
+        $amountIn  = (float) ($request->amount_in  ?? 0);
+        $amountOut = (float) ($request->amount_out ?? 0);
+        $rate      = (float) ($request->rate       ?? 0);
+        $costRate  = (float) ($request->cost_rate  ?? 0);
+
+        $tx = FxTransaction::create([
+            'fx_customer_id' => $request->fx_customer_id,
+            'date'           => $request->date,
+            'currency'       => $request->currency,
+            'amount_in'      => $amountIn,
+            'amount_out'     => $amountOut,
+            'rate'           => $rate,
+            'myr_converted'  => $rate * ($amountIn - $amountOut),
+            'myr_out'        => (float) ($request->myr_out ?? 0),
+            'myr_in'         => (float) ($request->myr_in  ?? 0),
+            'remark'         => $request->remark,
+            'cost_rate'      => $costRate,
+            'profit'         => $amountIn * ($costRate - $rate),
+            'created_by'     => auth()->id(),
+        ]);
+
+        return response()->json(['success' => true, 'data' => $tx]);
+    }
+
+    public function customerTxUpdate(Request $request, $id)
+    {
+        $tx = FxTransaction::findOrFail($id);
+
+        $amountIn  = (float) ($request->amount_in  ?? $tx->amount_in);
+        $amountOut = (float) ($request->amount_out ?? $tx->amount_out);
+        $rate      = (float) ($request->rate       ?? $tx->rate);
+        $costRate  = (float) ($request->cost_rate  ?? $tx->cost_rate);
+
+        $tx->update([
+            'date'          => $request->date          ?? $tx->date,
+            'currency'      => $request->currency      ?? $tx->currency,
+            'amount_in'     => $amountIn,
+            'amount_out'    => $amountOut,
+            'rate'          => $rate,
+            'myr_converted' => $rate * ($amountIn - $amountOut),
+            'myr_out'       => (float) ($request->myr_out ?? $tx->myr_out),
+            'myr_in'        => (float) ($request->myr_in  ?? $tx->myr_in),
+            'remark'        => $request->remark        ?? $tx->remark,
+            'cost_rate'     => $costRate,
+            'profit'        => $amountIn * ($costRate - $rate),
+        ]);
+
+        return response()->json(['success' => true, 'data' => $tx->fresh()]);
+    }
+
+    // ─── Roles ────────────────────────────────────────────────────────────────────
+
+    public function roles(Request $request)
+    {
+        $roles = Role::select('id', 'name')->orderBy('name')->get();
+
+        return response()->json($roles);
+    }
+
     // ─── Admins ───────────────────────────────────────────────────────────────────
 
     public function admins(Request $request)
@@ -372,18 +658,21 @@ class BoDashboardController extends Controller
             $query->where('status', $request->status);
         }
 
-        $admins = $query->select('id', 'name', 'fullname', 'email', 'role', 'status', 'created_at', 'updated_at')
+        $admins = $query->select('id', 'name', 'fullname', 'email', 'phone_number', 'role', 'status', 'last_login_at', 'last_login_ip', 'created_at', 'updated_at')
             ->orderBy('id')
             ->get()
             ->map(function ($a) {
                 return [
-                    'id'         => $a->id,
-                    'username'   => $a->name,
-                    'name'       => $a->fullname,
-                    'created_by' => '-',
-                    'last_login' => $a->updated_at ? $a->updated_at->format('Y-m-d H:i') : '-',
-                    'role'       => $a->role,
-                    'status'     => $a->status,
+                    'id'            => $a->id,
+                    'username'      => $a->name,
+                    'name'          => $a->fullname,
+                    'email'         => $a->email,
+                    'phone_number'  => $a->phone_number,
+                    'created_by'    => '-',
+                    'last_login'    => $a->last_login_at ? $a->last_login_at->format('Y-m-d H:i') : '-',
+                    'last_login_ip' => $a->last_login_ip ?? '-',
+                    'role'          => $a->role,
+                    'status'        => $a->status,
                 ];
             });
 
@@ -400,12 +689,13 @@ class BoDashboardController extends Controller
         ]);
 
         $admin = Administrator::create([
-            'name'     => $request->username,
-            'fullname' => $request->fullname,
-            'email'    => $request->email ?? ($request->username . '@bo.local'),
-            'password' => Hash::make($request->password),
-            'role'     => $request->role,
-            'status'   => 'active',
+            'name'         => $request->username,
+            'fullname'     => $request->fullname,
+            'email'        => $request->email ?? ($request->username . '@bo.local'),
+            'phone_number' => $request->phone_number,
+            'password'     => Hash::make($request->password),
+            'role'         => $request->role,
+            'status'       => $request->status,
         ]);
 
         return response()->json(['success' => true, 'data' => $admin]);
@@ -414,7 +704,7 @@ class BoDashboardController extends Controller
     public function adminUpdate(Request $request, $id)
     {
         $admin = Administrator::findOrFail($id);
-        $data  = $request->only(['fullname', 'role', 'status']);
+        $data  = $request->only(['fullname', 'phone_number', 'role', 'status']);
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }

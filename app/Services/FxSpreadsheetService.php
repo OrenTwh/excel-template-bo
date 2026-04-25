@@ -397,7 +397,7 @@ class FxSpreadsheetService
             ->whereMonth('date', $month)
             ->selectRaw("
                 fx_customer_id,
-                date,
+                DATE(date) as date,
                 SUM(CASE WHEN amount_in > 0 THEN 1 ELSE 0 END) as buy_in_count,
                 SUM(profit)                                      as profit,
                 MAX(CASE WHEN amount_in > 0 OR amount_out > 0 OR myr_out > 0 OR myr_in > 0 THEN 1 ELSE 0 END) as active
@@ -415,7 +415,11 @@ class FxSpreadsheetService
         // Build matrix
         $matrix = [];
         foreach ($customers as $customer) {
-            $customerRows = $rows->get($customer->id, collect())->keyBy('date');
+
+            $customerRows = $rows->get($customer->id, collect())
+                ->keyBy(function ($item) {
+                    return \Carbon\Carbon::parse($item->date)->toDateString();
+                });
             $dateData     = [];
 
             foreach ($dates as $date) {

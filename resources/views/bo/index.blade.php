@@ -339,7 +339,7 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
         <!-- arrows icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M4 17h12m0 0l-4-4m4 4l-4 4"/></svg>
     </button>
-    <button class="nav-btn" data-page="banktx"        title="Bank Transaction">
+    <button class="nav-btn" data-page="banktx"        title="Customers">
         <!-- grid icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
     </button>
@@ -382,8 +382,8 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
             <span class="filter-colon">:</span>
             <select id="tx-type" class="filter-input">
                 <option value="all">ALL</option>
-                <option value="active" selected>ACTIVE</option>
-                <option value="inactive">INACTIVE</option>
+                <option value=10 selected>ACTIVE</option>
+                <option value=20>INACTIVE</option>
             </select>
         </div>
         <div class="filter-row">
@@ -460,68 +460,68 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <div id="page-banktx" class="page-section">
     <div class="btx-toolbar">
-        <input type="date" id="btx-date" value="{{ date('Y-m-d') }}">
-        <button class="icon-btn" title="Copy" id="btx-copy-btn">&#128203;</button>
-        <button class="icon-btn" title="Alert" id="btx-alert-btn">&#9888;</button>
-        <select id="btx-type-filter">
-            <option value="all">ALL</option>
-            <option value="in">IN</option>
-            <option value="out">OUT</option>
+        <input type="text" id="ctx-search" placeholder="Search by name" style="flex:1;min-width:120px;">
+        <select id="ctx-customer-select" style="max-width:220px;">
+            <option value="">-- Select Customer --</option>
         </select>
-        <select id="btx-subtype-filter">
-            <option value="all">ALL</option>
-        </select>
-        <input type="text" id="btx-search" placeholder="Search Description / ID" style="flex:1;min-width:120px;">
-        <select id="btx-bank-select" style="max-width:160px;">
-            <option value="">-- Select Bank --</option>
-        </select>
+        <button class="icon-btn" title="Add Customer" id="ctx-add-btn" style="font-size:18px;">+</button>
     </div>
     <div style="padding:6px 8px;background:#e8e8e8;">
-        <button class="bank-selector-btn" id="btx-active-bank-btn">Select a bank</button>
+        <button class="bank-selector-btn" id="ctx-active-customer-btn">Select a customer</button>
     </div>
     <div class="btx-summary">
-        <div class="s-cell">START<br><span class="s-val" id="btx-start">0.00</span></div>
-        <div class="s-cell">TODAY<br><span class="s-val" id="btx-today">0.00</span></div>
-        <div class="s-cell">BALANCE<br><span class="s-val" id="btx-balance">0.00</span></div>
+        <div class="s-cell">INITIAL BAL<br><span class="s-val" id="ctx-initial">0.00</span></div>
+        <div class="s-cell">TOTAL IN<br><span class="s-val" id="ctx-total-in">0.00</span></div>
+        <div class="s-cell">TOTAL OUT<br><span class="s-val" id="ctx-total-out">0.00</span></div>
+        <div class="s-cell">BALANCE<br><span class="s-val" id="ctx-balance">0.00</span></div>
     </div>
     <div style="overflow-x:auto;">
-        <table class="data-table" id="btx-table">
+        <table class="data-table" id="ctx-table">
             <thead>
                 <tr>
                     <th style="width:36px;">NO.</th>
-                    <th>DESCRIPTION</th>
-                    <th style="width:90px;">IN</th>
-                    <th style="width:90px;">OUT</th>
-                    <th style="width:80px;">TIME</th>
-                    <th style="width:90px;">ID</th>
-                    <th style="width:80px;">MATCH</th>
-                    <th style="width:80px;">FEE</th>
-                    <th style="width:100px;">REMARKS</th>
-                    <th style="width:80px;">INFO</th>
+                    <th style="width:90px;">DATE</th>
+                    <th style="width:60px;">CCY</th>
+                    <th style="width:90px;">BUY IN</th>
+                    <th style="width:90px;">SELL OUT</th>
+                    <th style="width:80px;">RATE</th>
+                    <th style="width:100px;">MYR CONV.</th>
+                    <th style="width:90px;">MYR OUT</th>
+                    <th style="width:90px;">MYR IN</th>
+                    <th>REMARK</th>
+                    <th style="width:80px;">COST RATE</th>
+                    <th style="width:90px;">PROFIT</th>
                 </tr>
             </thead>
-            <tbody id="btx-tbody">
-                <tr id="btx-empty-row"><td colspan="10" style="text-align:center;color:#999;padding:20px;">Select a bank to load transactions.</td></tr>
-                <tr id="btx-new-row" style="display:none;">
+            <tbody id="ctx-tbody">
+                <tr id="ctx-empty-row"><td colspan="12" style="text-align:center;color:#999;padding:20px;">Select a customer to load transactions.</td></tr>
+                <tr id="ctx-new-row" style="display:none;">
                     <td></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="description" placeholder="Press enter to save"></span></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="date"></span></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="currency"></span></td>
                     <td><span class="editable-cell" contenteditable="true" data-field="amount_in"></span></td>
                     <td><span class="editable-cell" contenteditable="true" data-field="amount_out"></span></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="time"></span></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="ref_id"></span></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="match"></span></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="fee"></span></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="remarks"></span></td>
-                    <td><span class="editable-cell" contenteditable="true" data-field="info"></span></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="rate"></span></td>
+                    <td></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="myr_out"></span></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="myr_in"></span></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="remark"></span></td>
+                    <td><span class="editable-cell" contenteditable="true" data-field="cost_rate"></span></td>
+                    <td></td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="2">TOTAL</td>
-                    <td id="btx-total-in">0.00</td>
-                    <td id="btx-total-out">0.00</td>
-                    <td colspan="5"></td>
-                    <td id="btx-total-fee">0.00</td>
+                    <td colspan="3">TOTAL</td>
+                    <td id="ctx-foot-in">0.00</td>
+                    <td id="ctx-foot-out">0.00</td>
+                    <td></td>
+                    <td id="ctx-foot-myr">0.00</td>
+                    <td id="ctx-foot-myr-out">0.00</td>
+                    <td id="ctx-foot-myr-in">0.00</td>
+                    <td></td>
+                    <td></td>
+                    <td id="ctx-foot-profit">0.00</td>
                 </tr>
             </tfoot>
         </table>
@@ -536,61 +536,216 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
         <h3>&#128200; Reports</h3>
         <ul>
             <li><a href="#" class="active cf-nav" data-report="transaction">Transaction <span>&#9654;</span></a></li>
-            <li class="sub"><a href="#" class="cf-nav" data-report="bank">Bank</a></li>
-            <li class="sub"><a href="#" class="cf-nav" data-report="staff">Staff</a></li>
-            <li class="sub"><a href="#" class="cf-nav" data-report="activity">Activity Log</a></li>
+            <li><a href="#" class="cf-nav" data-report="bank">Bank</a></li>
+            <li><a href="#" class="cf-nav" data-report="staff">Staff</a></li>
+            <li><a href="#" class="cf-nav" data-report="activity">Activity Log</a></li>
         </ul>
     </div>
     <div class="cf-content">
-        <h2 id="cf-title">Transaction Report</h2>
-        <div class="cf-filter-row">
-            <label>Period</label><span class="cf-colon">:</span>
-            <div class="cf-date-range">
-                <input type="date" id="cf-from" value="{{ date('Y-m-01') }}">
-                <input type="date" id="cf-to"   value="{{ date('Y-m-t') }}">
+        <!-- ── Transaction Report ─────────────────────────────────── -->
+        <div id="cf-panel-transaction" class="cf-panel">
+            <h2>Transaction Report</h2>
+            <div class="cf-filter-row">
+                <label>Period</label><span class="cf-colon">:</span>
+                <div class="cf-date-range">
+                    <input type="date" id="cf-from" value="{{ date('Y-m-01') }}">
+                    <input type="date" id="cf-to"   value="{{ date('Y-m-t') }}">
+                </div>
+            </div>
+            <div class="cf-filter-row">
+                <label>Display</label><span class="cf-colon">:</span>
+                <div class="cf-toggle">
+                    <button class="active" data-display="daily">Daily</button>
+                    <button data-display="monthly">Monthly</button>
+                    <button data-display="yearly">Yearly</button>
+                </div>
+            </div>
+            <div class="cf-filter-row">
+                <label>Type</label><span class="cf-colon">:</span>
+                <select id="cf-type" class="cf-select">
+                    <option value="all">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <a class="recalc-link" id="cf-recalc">RECALCULATE</a>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Deposit</th>
+                            <th></th>
+                            <th>Withdraw</th>
+                            <th></th>
+                            <th>Net</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cf-tbody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td id="cf-tot-dep-cnt">0</td>
+                            <td id="cf-tot-dep-amt">0.00</td>
+                            <td id="cf-tot-wd-cnt">0</td>
+                            <td id="cf-tot-wd-amt">0.00</td>
+                            <td id="cf-tot-net">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
-        <div class="cf-filter-row">
-            <label>Display</label><span class="cf-colon">:</span>
-            <div class="cf-toggle">
-                <button class="active" data-display="daily">Daily</button>
-                <button data-display="monthly">Monthly</button>
-                <button data-display="yearly">Yearly</button>
+
+        <!-- ── Bank Report ────────────────────────────────────────── -->
+        <div id="cf-panel-bank" class="cf-panel" style="display:none;">
+            <h2>Bank Report</h2>
+            <div class="cf-filter-row">
+                <label>Period</label><span class="cf-colon">:</span>
+                <div class="cf-date-range">
+                    <input type="date" id="cfb-from" value="{{ date('Y-m-01') }}">
+                    <input type="date" id="cfb-to"   value="{{ date('Y-m-t') }}">
+                </div>
+            </div>
+            <div class="cf-filter-row">
+                <label>Display</label><span class="cf-colon">:</span>
+                <div class="cf-toggle" id="cfb-toggle">
+                    <button class="active" data-display="daily">Daily</button>
+                    <button data-display="monthly">Monthly</button>
+                    <button data-display="yearly">Yearly</button>
+                </div>
+            </div>
+            <div class="cf-filter-row">
+                <label>Bank</label><span class="cf-colon">:</span>
+                <select id="cfb-bank" class="cf-select" style="min-width:240px;">
+                    <option value="">All Banks</option>
+                </select>
+            </div>
+            <a class="recalc-link" id="cfb-recalc">RECALCULATE</a>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>In</th>
+                            <th>Out</th>
+                            <th>Net</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cfb-tbody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td id="cfb-tot-in">0.00</td>
+                            <td id="cfb-tot-out">0.00</td>
+                            <td id="cfb-tot-net">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
         </div>
-        <div class="cf-filter-row">
-            <label>Type</label><span class="cf-colon">:</span>
-            <select id="cf-type" class="cf-select">
-                <option value="all">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-            </select>
+
+        <!-- ── Staff Report ───────────────────────────────────────── -->
+        <div id="cf-panel-staff" class="cf-panel" style="display:none;">
+            <h2>Staff Report</h2>
+            <div class="cf-filter-row">
+                <label>Period</label><span class="cf-colon">:</span>
+                <div class="cf-date-range">
+                    <input type="date" id="cfs-from" value="{{ date('Y-m-01') }}">
+                    <input type="date" id="cfs-to"   value="{{ date('Y-m-t') }}">
+                </div>
+            </div>
+            <a class="recalc-link" id="cfs-recalc">RECALCULATE</a>
+
+            <h3 style="color:#e04040;font-size:14px;margin:10px 0 6px;">Deposit</h3>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Staff</th><th>Total Approval</th><th>Total Reject</th><th>Response</th><th>Process</th></tr></thead>
+                    <tbody id="cfs-dep-tbody"></tbody>
+                    <tfoot><tr style="background:#fde8c8;">
+                        <td><strong>TOTAL</strong></td>
+                        <td id="cfs-dep-approve">0</td>
+                        <td id="cfs-dep-reject">0</td>
+                        <td id="cfs-dep-response">0s</td>
+                        <td id="cfs-dep-process">0s</td>
+                    </tr></tfoot>
+                </table>
+            </div>
+
+            <h3 style="color:#e04040;font-size:14px;margin:14px 0 6px;">Withdraw</h3>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Staff</th><th>Total Approval</th><th>Total Reject</th><th>Response</th><th>Process</th></tr></thead>
+                    <tbody id="cfs-wd-tbody"></tbody>
+                    <tfoot><tr style="background:#fde8c8;">
+                        <td><strong>TOTAL</strong></td>
+                        <td id="cfs-wd-approve">0</td>
+                        <td id="cfs-wd-reject">0</td>
+                        <td id="cfs-wd-response">0s</td>
+                        <td id="cfs-wd-process">0s</td>
+                    </tr></tfoot>
+                </table>
+            </div>
+
+            <h3 style="color:#e04040;font-size:14px;margin:14px 0 6px;">Tips</h3>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Staff</th><th>Total</th><th>Amount</th></tr></thead>
+                    <tbody id="cfs-tips-tbody"></tbody>
+                    <tfoot><tr style="background:#fde8c8;">
+                        <td><strong>TOTAL</strong></td>
+                        <td id="cfs-tips-total">0</td>
+                        <td id="cfs-tips-amount">0.00</td>
+                    </tr></tfoot>
+                </table>
+            </div>
+
+            <h3 style="color:#e04040;font-size:14px;margin:14px 0 6px;">Rating</h3>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Staff</th><th>Total User</th><th>Rating</th><th>Tips</th><th>Average Rating</th></tr></thead>
+                    <tbody id="cfs-rating-tbody"></tbody>
+                </table>
+            </div>
         </div>
-        <a class="recalc-link" id="cf-recalc">RECALCULATE</a>
-        <div style="overflow-x:auto;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Deposit</th>
-                        <th></th>
-                        <th>Withdraw</th>
-                        <th></th>
-                        <th>Net</th>
-                    </tr>
-                </thead>
-                <tbody id="cf-tbody"></tbody>
-                <tfoot>
-                    <tr id="cf-tfoot">
-                        <td><strong>Total</strong></td>
-                        <td id="cf-tot-dep-cnt">0</td>
-                        <td id="cf-tot-dep-amt">0.00</td>
-                        <td id="cf-tot-wd-cnt">0</td>
-                        <td id="cf-tot-wd-amt">0.00</td>
-                        <td id="cf-tot-net">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
+
+        <!-- ── Activity Log ───────────────────────────────────────── -->
+        <div id="cf-panel-activity" class="cf-panel" style="display:none;">
+            <h2>Activity Log</h2>
+            <div class="cf-filter-row">
+                <label>Date</label><span class="cf-colon">:</span>
+                <div class="cf-date-range">
+                    <input type="date" id="cfa-from" value="{{ date('Y-m-01') }}">
+                    <input type="date" id="cfa-to"   value="{{ date('Y-m-t') }}">
+                </div>
+            </div>
+            <div class="cf-filter-row">
+                <label>Action</label><span class="cf-colon">:</span>
+                <select id="cfa-action" class="cf-select" style="min-width:200px;">
+                    <option value="">ALL</option>
+                    <option value="inactive">INACTIVE</option>
+                    <option value="active">ACTIVE</option>
+                    <option value="created">CREATED</option>
+                    <option value="updated">UPDATED</option>
+                    <option value="deleted">DELETED</option>
+                </select>
+            </div>
+            <a class="recalc-link" id="cfa-recalc">SEARCH</a>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Username</th>
+                            <th>Player Name</th>
+                            <th>Mobile</th>
+                            <th>Action By</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cfa-tbody"></tbody>
+                </table>
+            </div>
+            <div id="cfa-pagination" style="padding:6px 8px;font-size:12px;color:#555;"></div>
         </div>
     </div>
 </div>
@@ -603,8 +758,8 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
         <label>Status :</label>
         <select id="banks-status-filter">
             <option value="all">ALL</option>
-            <option value="active">ACTIVE</option>
-            <option value="inactive">INACTIVE</option>
+            <option value=10>ACTIVE</option>
+            <option value=20>INACTIVE</option>
         </select>
     </div>
     <div style="overflow-x:auto;">
@@ -648,8 +803,6 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
             <span class="filter-colon">:</span>
             <select id="adm-role" class="filter-input">
                 <option value="all">ALL</option>
-                <option value="admin" selected>ADMIN</option>
-                <option value="agent">AGENT</option>
             </select>
         </div>
         <div class="filter-row">
@@ -657,8 +810,8 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
             <span class="filter-colon">:</span>
             <select id="adm-status" class="filter-input">
                 <option value="all">ALL</option>
-                <option value="active" selected>ACTIVE</option>
-                <option value="inactive">INACTIVE</option>
+                <option value=10 selected>ACTIVE</option>
+                <option value=20>INACTIVE</option>
             </select>
         </div>
     </div>
@@ -732,8 +885,8 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
             <div class="modal-field"><label>Remark</label><textarea id="mb-remark"></textarea></div>
             <div class="modal-field"><label>Status</label>
                 <select id="mb-status" style="height:30px;width:100%;border:1px solid #ccc;padding:3px 6px;font-size:12px;">
-                    <option value="active">ACTIVE</option>
-                    <option value="inactive">INACTIVE</option>
+                    <option value=10>ACTIVE</option>
+                    <option value=20>INACTIVE</option>
                 </select>
             </div>
         </div>
@@ -774,17 +927,21 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
             <div class="modal-field"><label>Username *</label><input type="text" id="ma-username"></div>
             <div class="modal-field"><label>Full Name *</label><input type="text" id="ma-fullname"></div>
             <div class="modal-field"><label>Email</label><input type="email" id="ma-email"></div>
+            <div class="modal-field"><label>Phone Number</label>
+                <div style="display:flex;align-items:center;gap:0;">
+                    <span style="background:#e8e8e8;border:1px solid #ccc;border-right:none;padding:5px 8px;font-size:12px;height:30px;display:flex;align-items:center;color:#333;white-space:nowrap;">+60</span>
+                    <input type="text" id="ma-phone" style="border-top-left-radius:0;border-bottom-left-radius:0;flex:1;">
+                </div>
+            </div>
             <div class="modal-field"><label>Password <span id="ma-pw-hint" style="color:#aaa;font-size:11px;">(leave blank to keep)</span></label><input type="password" id="ma-password"></div>
             <div class="modal-field"><label>Role *</label>
                 <select id="ma-role" style="height:30px;width:100%;border:1px solid #ccc;padding:3px 6px;font-size:12px;">
-                    <option value="admin">ADMIN</option>
-                    <option value="agent">AGENT</option>
                 </select>
             </div>
             <div class="modal-field"><label>Status</label>
                 <select id="ma-status" style="height:30px;width:100%;border:1px solid #ccc;padding:3px 6px;font-size:12px;">
-                    <option value="active">ACTIVE</option>
-                    <option value="inactive">INACTIVE</option>
+                    <option value=10>ACTIVE</option>
+                    <option value=20>INACTIVE</option>
                 </select>
             </div>
         </div>
@@ -815,6 +972,62 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
     </div>
 </div>
 
+<!-- Admin IP Info Modal -->
+<div class="modal-overlay" id="modal-admin-ip">
+    <div class="modal-box" style="width:340px;">
+        <div class="modal-header">
+            <span id="modal-admin-ip-title">Login Info</span>
+            <button class="modal-close" data-close="modal-admin-ip">&times;</button>
+        </div>
+        <div class="modal-body" style="font-size:12px;">
+            <div class="modal-field">
+                <label>Username</label>
+                <div id="mip-username" style="padding:5px 0;font-weight:bold;"></div>
+            </div>
+            <div class="modal-field">
+                <label>Last Login IP</label>
+                <div id="mip-ip" style="padding:5px 0;font-weight:bold;"></div>
+            </div>
+            <div class="modal-field">
+                <label>Last Login Date</label>
+                <div id="mip-date" style="padding:5px 0;font-weight:bold;"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" data-close="modal-admin-ip">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bank History Modal -->
+<div class="modal-overlay" id="modal-bank-history">
+    <div class="modal-box" style="width:700px;">
+        <div class="modal-header">
+            <span id="modal-bank-history-title">Bank History</span>
+            <button class="modal-close" data-close="modal-bank-history">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:0;max-height:70vh;overflow-y:auto;">
+            <table class="data-table" style="margin:0;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>In</th>
+                        <th>Out</th>
+                        <th>Fee</th>
+                        <th>Time</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="bh-tbody"></tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" data-close="modal-bank-history">Close</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ── Globals ──────────────────────────────────────────────────────────────────
 const BASE   = '{{ rtrim(url("/"), "/") }}';
@@ -824,9 +1037,11 @@ const API    = `${BASE}/${ADMIN}/bo`;
 
 let txAdvanced     = false;
 let cfDisplay      = 'daily';
-let btxActiveBankId = null;
-let btxActiveBankName = '';
+let ctxActiveCustomerId = null;
+let ctxActiveCustomerName = '';
+let allCustomers   = [];
 let allBanks       = [];
+let allRoles       = [];
 
 // ── AJAX helper ───────────────────────────────────────────────────────────────
 async function api(method, path, data = null) {
@@ -885,7 +1100,7 @@ document.querySelectorAll('#nav-bar .nav-btn').forEach(btn => {
 
         // lazy-load on first visit
         if (page === 'banks')    loadBanks();
-        if (page === 'banktx')   initBankTx();
+        if (page === 'banktx')   initCustomerTx();
         if (page === 'cashflow') loadCashflow();
     });
 });
@@ -1015,8 +1230,7 @@ function renderBanks(banks) {
 
 function refreshBankDropdowns() {
     const opts = allBanks.map(b => `<option value="${b.id}">${b.bank_name} – ${b.account_name}</option>`).join('');
-    document.getElementById('tx-bank').innerHTML      = `<option value="all">Please Select</option>${opts}`;
-    document.getElementById('btx-bank-select').innerHTML = `<option value="">-- Select Bank --</option>${opts}`;
+    document.getElementById('tx-bank').innerHTML = `<option value="all">Please Select</option>${opts}`;
 }
 
 function bankEdit(id) {
@@ -1041,10 +1255,35 @@ function bankEditAmount(id, balance) {
 }
 
 async function bankHistory(id) {
+    const bank = allBanks.find(b => b.id == id);
+    const bankLabel = bank ? `${bank.bank_name} (${bank.account_name})` : `Bank #${id}`;
+    document.getElementById('modal-bank-history-title').textContent = `History — ${bankLabel}`;
+
+    const tbody = document.getElementById('bh-tbody');
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">Loading…</td></tr>`;
+    openModal('modal-bank-history');
+
     try {
         const rows = await api('GET', `banks/${id}/history`);
-        alert(`History: ${rows.length} transactions found.\n(Full history table — wire to a modal as needed)`);
-    } catch(e) { alert(e.message); }
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">No history found.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(r => {
+            const date = r.date ? r.date.substring(0, 10) : '-';
+            return `<tr>
+                <td>${date}</td>
+                <td>${r.description ?? ''}</td>
+                <td>${r.amount_in ? parseFloat(r.amount_in).toFixed(2) : ''}</td>
+                <td>${r.amount_out ? parseFloat(r.amount_out).toFixed(2) : ''}</td>
+                <td>${r.fee ? parseFloat(r.fee).toFixed(2) : ''}</td>
+                <td>${r.time ?? ''}</td>
+                <td>${r.remarks ?? ''}</td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#c00;padding:20px;">${e.message}</td></tr>`;
+    }
 }
 
 document.getElementById('modal-bank-save').addEventListener('click', async () => {
@@ -1080,134 +1319,174 @@ document.getElementById('mba-save').addEventListener('click', async () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BANK TRANSACTIONS
+// CUSTOMER TRANSACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
-function initBankTx() {
-    if (!allBanks.length) loadBanks().then(() => { if (!btxActiveBankId && allBanks.length) selectBtxBank(allBanks[0].id); });
-    else if (!btxActiveBankId && allBanks.length) selectBtxBank(allBanks[0].id);
-}
-
-document.getElementById('btx-bank-select').addEventListener('change', function() {
-    if (this.value) selectBtxBank(parseInt(this.value));
-});
-document.getElementById('btx-active-bank-btn').addEventListener('click', () => {
-    document.getElementById('btx-bank-select').focus();
-});
-document.getElementById('btx-date').addEventListener('change', () => {
-    if (btxActiveBankId) loadBankTransactions();
-});
-['btx-type-filter','btx-subtype-filter'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-        if (btxActiveBankId) loadBankTransactions();
-    });
-});
-document.getElementById('btx-search').addEventListener('input', debounce(() => {
-    if (btxActiveBankId) loadBankTransactions();
-}, 400));
-
-function selectBtxBank(id) {
-    btxActiveBankId = id;
-    const bank = allBanks.find(b => b.id == id);
-    btxActiveBankName = bank ? `${bank.bank_name} (${bank.account_name})` : `Bank #${id}`;
-    document.getElementById('btx-active-bank-btn').textContent = btxActiveBankName;
-    document.getElementById('btx-bank-select').value = id;
-    loadBankTransactions();
-}
-
-async function loadBankTransactions() {
-    const params = {
-        bank_id: btxActiveBankId,
-        date:    document.getElementById('btx-date').value,
-        type:    document.getElementById('btx-type-filter').value,
-        search:  document.getElementById('btx-search').value,
-    };
+async function loadCustomers() {
     try {
-        const d = await api('GET', 'bank-transactions', params);
-        document.getElementById('btx-start').textContent   = d.start_bal;
-        document.getElementById('btx-today').textContent   = d.today_in;
-        document.getElementById('btx-balance').textContent = d.balance;
-        document.getElementById('btx-total-in').textContent  = d.total_in;
-        document.getElementById('btx-total-out').textContent = d.total_out;
+        allCustomers = await api('GET', 'customers');
+        refreshCustomerDropdown();
+    } catch(e) { console.error('Failed to load customers:', e); }
+}
 
-        const tbody = document.getElementById('btx-tbody');
-        // keep the new-row template
-        const newRow = document.getElementById('btx-new-row');
+function refreshCustomerDropdown() {
+    const opts = allCustomers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('ctx-customer-select').innerHTML = `<option value="">-- Select Customer --</option>${opts}`;
+}
+
+function initCustomerTx() {
+    if (!allCustomers.length) loadCustomers().then(() => { if (!ctxActiveCustomerId && allCustomers.length) selectCtxCustomer(allCustomers[0].id); });
+    else if (!ctxActiveCustomerId && allCustomers.length) selectCtxCustomer(allCustomers[0].id);
+}
+
+document.getElementById('ctx-customer-select').addEventListener('change', function() {
+    if (this.value) selectCtxCustomer(parseInt(this.value));
+});
+document.getElementById('ctx-active-customer-btn').addEventListener('click', () => {
+    document.getElementById('ctx-customer-select').focus();
+});
+document.getElementById('ctx-search').addEventListener('input', debounce(() => {
+    // filter dropdown by search text
+    const q = document.getElementById('ctx-search').value.toLowerCase();
+    const sel = document.getElementById('ctx-customer-select');
+    sel.innerHTML = `<option value="">-- Select Customer --</option>` +
+        allCustomers.filter(c => c.name.toLowerCase().includes(q))
+            .map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+}, 300));
+
+// Add customer button
+document.getElementById('ctx-add-btn').addEventListener('click', () => {
+    const name = prompt('Enter customer name:');
+    if (!name || !name.trim()) return;
+    const balance = prompt('Initial balance (default 0):', '0');
+    api('POST', 'customers', { name: name.trim(), initial_balance: parseFloat(balance) || 0 })
+        .then(() => { loadCustomers(); })
+        .catch(e => alert('Error: ' + e.message));
+});
+
+function selectCtxCustomer(id) {
+    ctxActiveCustomerId = id;
+    const cust = allCustomers.find(c => c.id == id);
+    ctxActiveCustomerName = cust ? cust.name : `Customer #${id}`;
+    document.getElementById('ctx-active-customer-btn').textContent = ctxActiveCustomerName;
+    document.getElementById('ctx-customer-select').value = id;
+    loadCustomerTransactions();
+}
+
+async function loadCustomerTransactions() {
+    if (!ctxActiveCustomerId) return;
+    try {
+        const d = await api('GET', `customers/${ctxActiveCustomerId}`);
+        const cust = d.customer;
+        const txs  = d.transactions;
+        const summary = d.summary;
+
+        document.getElementById('ctx-initial').textContent   = parseFloat(cust.initial_balance).toFixed(2);
+        document.getElementById('ctx-total-in').textContent  = summary.total_myr_in ?? '0.00';
+        document.getElementById('ctx-total-out').textContent = summary.total_myr_out ?? '0.00';
+        document.getElementById('ctx-balance').textContent   = summary.balance ?? '0.00';
+
+        const tbody  = document.getElementById('ctx-tbody');
+        const newRow = document.getElementById('ctx-new-row');
 
         // remove old data rows
-        tbody.querySelectorAll('tr[data-btx-id]').forEach(r => r.remove());
-        document.getElementById('btx-empty-row').style.display = d.rows.length ? 'none' : '';
+        tbody.querySelectorAll('tr[data-ctx-id]').forEach(r => r.remove());
+        document.getElementById('ctx-empty-row').style.display = txs.length ? 'none' : '';
 
-        let totalFee = 0;
-        d.rows.forEach((row, i) => {
-            totalFee += parseFloat(row.fee ?? 0);
-            const tr = buildBtxRow(row, i + 1);
+        let totIn = 0, totOut = 0, totMyr = 0, totMyrOut = 0, totMyrIn = 0, totProfit = 0;
+        txs.forEach((tx, i) => {
+            totIn     += parseFloat(tx.amount_in ?? 0);
+            totOut    += parseFloat(tx.amount_out ?? 0);
+            totMyr    += parseFloat(tx.myr_converted ?? 0);
+            totMyrOut += parseFloat(tx.myr_out ?? 0);
+            totMyrIn  += parseFloat(tx.myr_in ?? 0);
+            totProfit += parseFloat(tx.profit ?? 0);
+            const tr = buildCtxRow(tx, i + 1);
             tbody.insertBefore(tr, newRow);
         });
-        document.getElementById('btx-total-fee').textContent = totalFee.toFixed(2);
 
-        // show new-row for data entry
-        newRow.style.display = btxActiveBankId ? '' : 'none';
+        document.getElementById('ctx-foot-in').textContent      = totIn.toFixed(4);
+        document.getElementById('ctx-foot-out').textContent     = totOut.toFixed(4);
+        document.getElementById('ctx-foot-myr').textContent     = totMyr.toFixed(2);
+        document.getElementById('ctx-foot-myr-out').textContent = totMyrOut.toFixed(2);
+        document.getElementById('ctx-foot-myr-in').textContent  = totMyrIn.toFixed(2);
+        document.getElementById('ctx-foot-profit').textContent  = totProfit.toFixed(2);
+
+        // show new-row
+        newRow.style.display = ctxActiveCustomerId ? '' : 'none';
         newRow.querySelectorAll('.editable-cell').forEach(c => c.textContent = '');
+        // default date to today
+        const dateCell = newRow.querySelector('[data-field="date"]');
+        if (dateCell) dateCell.textContent = new Date().toISOString().substring(0, 10);
 
     } catch(e) {
-        alert('Error loading bank transactions: ' + e.message);
+        alert('Error loading customer: ' + e.message);
     }
 }
 
-function buildBtxRow(row, no) {
+function buildCtxRow(tx, no) {
     const tr = document.createElement('tr');
-    tr.dataset.btxId = row.id;
-    const fields = ['description','amount_in','amount_out','time','ref_id','match','fee','remarks','info'];
-    tr.innerHTML = `<td>${no}</td>` + fields.map(f => `
-        <td><span class="editable-cell" contenteditable="true" data-field="${f}" data-id="${row.id}">${row[f] ?? ''}</span></td>
-    `).join('');
+    tr.dataset.ctxId = tx.id;
+    const date = tx.date ? tx.date.substring(0, 10) : '';
+    const editableFields = ['date','currency','amount_in','amount_out','rate','myr_out','myr_in','remark','cost_rate'];
+    const readonlyFields = { myr_converted: tx.myr_converted, profit: tx.profit };
 
-    // save on Enter
+    tr.innerHTML = `<td>${no}</td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="date" data-id="${tx.id}">${date}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="currency" data-id="${tx.id}">${tx.currency ?? ''}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="amount_in" data-id="${tx.id}">${tx.amount_in ?? ''}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="amount_out" data-id="${tx.id}">${tx.amount_out ?? ''}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="rate" data-id="${tx.id}">${tx.rate ?? ''}</span></td>` +
+        `<td>${parseFloat(tx.myr_converted ?? 0).toFixed(2)}</td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="myr_out" data-id="${tx.id}">${tx.myr_out ?? ''}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="myr_in" data-id="${tx.id}">${tx.myr_in ?? ''}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="remark" data-id="${tx.id}">${tx.remark ?? ''}</span></td>` +
+        `<td><span class="editable-cell" contenteditable="true" data-field="cost_rate" data-id="${tx.id}">${tx.cost_rate ?? ''}</span></td>` +
+        `<td>${parseFloat(tx.profit ?? 0).toFixed(2)}</td>`;
+
     tr.querySelectorAll('.editable-cell').forEach(cell => {
         cell.addEventListener('keydown', async e => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                await saveBtxRow(tr, row.id);
-            }
+            if (e.key === 'Enter') { e.preventDefault(); await saveCtxRow(tr, tx.id); }
         });
-        cell.addEventListener('blur', () => saveBtxRow(tr, row.id));
+        cell.addEventListener('blur', () => saveCtxRow(tr, tx.id));
     });
     return tr;
 }
 
-async function saveBtxRow(tr, id) {
+async function saveCtxRow(tr, id) {
     const body = {};
     tr.querySelectorAll('.editable-cell').forEach(c => {
         body[c.dataset.field] = c.textContent.trim();
     });
     try {
-        const isNew = !id;
-        if (isNew) {
-            body.bo_bank_id = btxActiveBankId;
-            body.date       = document.getElementById('btx-date').value;
-            await api('POST', 'bank-transactions', body);
+        if (!id) {
+            body.fx_customer_id = ctxActiveCustomerId;
+            await api('POST', 'customers/transactions', body);
         } else {
-            await api('PUT', `bank-transactions/${id}`, body);
+            await api('PUT', `customers/transactions/${id}`, body);
         }
-        loadBankTransactions();
+        loadCustomerTransactions();
     } catch(e) {
-        console.error('Save BTX row:', e);
+        console.error('Save CTX row:', e);
     }
 }
 
 // new-row enter key
-document.getElementById('btx-new-row').querySelectorAll('.editable-cell').forEach(cell => {
+document.getElementById('ctx-new-row').querySelectorAll('.editable-cell').forEach(cell => {
     cell.addEventListener('keydown', async e => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            await saveBtxRow(document.getElementById('btx-new-row'), null);
+            await saveCtxRow(document.getElementById('ctx-new-row'), null);
         }
     });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CASHFLOW
+// CASHFLOW / REPORTS
 // ─────────────────────────────────────────────────────────────────────────────
+let cfActiveReport = 'transaction';
+let cfbDisplay     = 'daily';
+
+// Transaction report display toggle
 document.querySelectorAll('.cf-toggle button').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.cf-toggle button').forEach(b => b.classList.remove('active'));
@@ -1215,9 +1494,53 @@ document.querySelectorAll('.cf-toggle button').forEach(btn => {
         cfDisplay = btn.dataset.display;
     });
 });
-document.getElementById('cf-recalc').addEventListener('click', loadCashflow);
+document.getElementById('cf-recalc').addEventListener('click', loadCashflowTransaction);
 
-async function loadCashflow() {
+// Bank report display toggle
+document.querySelectorAll('#cfb-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#cfb-toggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        cfbDisplay = btn.dataset.display;
+    });
+});
+document.getElementById('cfb-recalc').addEventListener('click', loadCashflowBank);
+document.getElementById('cfs-recalc').addEventListener('click', loadCashflowStaff);
+document.getElementById('cfa-recalc').addEventListener('click', () => loadCashflowActivity(1));
+
+// Sidebar nav — switch panels
+document.querySelectorAll('.cf-nav').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.cf-nav').forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+        cfActiveReport = a.dataset.report;
+
+        // show/hide panels
+        document.querySelectorAll('.cf-panel').forEach(p => p.style.display = 'none');
+        const panel = document.getElementById(`cf-panel-${cfActiveReport}`);
+        if (panel) panel.style.display = '';
+
+        // populate bank dropdown if needed
+        if (cfActiveReport === 'bank') refreshCfBankDropdown();
+    });
+});
+
+function refreshCfBankDropdown() {
+    const opts = allBanks.map(b => `<option value="${b.id}">${b.bank_name} – ${b.account_name}</option>`).join('');
+    document.getElementById('cfb-bank').innerHTML = `<option value="">All Banks</option>${opts}`;
+}
+
+// Called on page nav to cashflow (initial load)
+function loadCashflow() {
+    if (cfActiveReport === 'transaction') loadCashflowTransaction();
+    else if (cfActiveReport === 'bank')   loadCashflowBank();
+    else if (cfActiveReport === 'staff')  loadCashflowStaff();
+    else if (cfActiveReport === 'activity') loadCashflowActivity(1);
+}
+
+// ── Transaction Report ───────────────────────────────────────────────────────
+async function loadCashflowTransaction() {
     const params = {
         date_from: document.getElementById('cf-from').value,
         date_to:   document.getElementById('cf-to').value,
@@ -1251,17 +1574,145 @@ async function loadCashflow() {
     }
 }
 
-// Cashflow sidebar nav
-document.querySelectorAll('.cf-nav').forEach(a => {
-    a.addEventListener('click', e => {
-        e.preventDefault();
-        document.querySelectorAll('.cf-nav').forEach(x => x.classList.remove('active'));
-        a.classList.add('active');
-        const titles = { transaction:'Transaction Report', bank:'Bank Report', staff:'Staff Report', activity:'Activity Log' };
-        document.getElementById('cf-title').textContent = titles[a.dataset.report] ?? 'Report';
-        loadCashflow();
-    });
-});
+// ── Bank Report ──────────────────────────────────────────────────────────────
+async function loadCashflowBank() {
+    const params = {
+        date_from: document.getElementById('cfb-from').value,
+        date_to:   document.getElementById('cfb-to').value,
+        display:   cfbDisplay,
+        bank_id:   document.getElementById('cfb-bank').value,
+    };
+    try {
+        const d = await api('GET', 'cashflow/bank', params);
+        const tbody = document.getElementById('cfb-tbody');
+        if (!d.rows.length) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No data.</td></tr>`;
+        } else {
+            tbody.innerHTML = d.rows.map(r => `
+                <tr>
+                    <td>${r.period}</td>
+                    <td>${parseFloat(r.total_in).toFixed(2)}</td>
+                    <td>${parseFloat(r.total_out).toFixed(2)}</td>
+                    <td>${parseFloat(r.net).toFixed(2)}</td>
+                </tr>`).join('');
+        }
+        document.getElementById('cfb-tot-in').textContent  = d.totals.total_in;
+        document.getElementById('cfb-tot-out').textContent = d.totals.total_out;
+        document.getElementById('cfb-tot-net').textContent = d.totals.net;
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+// ── Staff Report ─────────────────────────────────────────────────────────────
+async function loadCashflowStaff() {
+    const params = {
+        date_from: document.getElementById('cfs-from').value,
+        date_to:   document.getElementById('cfs-to').value,
+    };
+    try {
+        const d = await api('GET', 'cashflow/staff', params);
+
+        // Deposit table
+        const depTbody = document.getElementById('cfs-dep-tbody');
+        depTbody.innerHTML = d.deposit.rows.length ? d.deposit.rows.map(r => `
+            <tr>
+                <td>${r.staff}</td>
+                <td>${r.total_approval}</td>
+                <td>${r.total_reject}</td>
+                <td>${r.response}</td>
+                <td>${r.process}</td>
+            </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:#999;">No data.</td></tr>`;
+        document.getElementById('cfs-dep-approve').textContent  = d.deposit.totals.total_approval;
+        document.getElementById('cfs-dep-reject').textContent   = d.deposit.totals.total_reject;
+        document.getElementById('cfs-dep-response').textContent = d.deposit.totals.response;
+        document.getElementById('cfs-dep-process').textContent  = d.deposit.totals.process;
+
+        // Withdraw table
+        const wdTbody = document.getElementById('cfs-wd-tbody');
+        wdTbody.innerHTML = d.withdraw.rows.length ? d.withdraw.rows.map(r => `
+            <tr>
+                <td>${r.staff}</td>
+                <td>${r.total_approval}</td>
+                <td>${r.total_reject}</td>
+                <td>${r.response}</td>
+                <td>${r.process}</td>
+            </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:#999;">No data.</td></tr>`;
+        document.getElementById('cfs-wd-approve').textContent  = d.withdraw.totals.total_approval;
+        document.getElementById('cfs-wd-reject').textContent   = d.withdraw.totals.total_reject;
+        document.getElementById('cfs-wd-response').textContent = d.withdraw.totals.response;
+        document.getElementById('cfs-wd-process').textContent  = d.withdraw.totals.process;
+
+        // Tips table
+        const tipsTbody = document.getElementById('cfs-tips-tbody');
+        tipsTbody.innerHTML = d.tips.rows.length ? d.tips.rows.map(r => `
+            <tr>
+                <td>${r.staff}</td>
+                <td>${r.total}</td>
+                <td>${parseFloat(r.amount).toFixed(2)}</td>
+            </tr>`).join('') : `<tr><td colspan="3" style="text-align:center;color:#999;">No data.</td></tr>`;
+        document.getElementById('cfs-tips-total').textContent  = d.tips.totals.total;
+        document.getElementById('cfs-tips-amount').textContent = d.tips.totals.amount;
+
+        // Rating table
+        const ratingTbody = document.getElementById('cfs-rating-tbody');
+        ratingTbody.innerHTML = d.rating.rows.length ? d.rating.rows.map(r => `
+            <tr>
+                <td>${r.staff}</td>
+                <td>${r.total_user}</td>
+                <td>${r.rating}</td>
+                <td>${r.tips}</td>
+                <td>${r.average_rating}</td>
+            </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:#999;">No data.</td></tr>`;
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+// ── Activity Log ─────────────────────────────────────────────────────────────
+async function loadCashflowActivity(page) {
+    const params = {
+        date_from: document.getElementById('cfa-from').value,
+        date_to:   document.getElementById('cfa-to').value,
+        action:    document.getElementById('cfa-action').value,
+        page,
+    };
+    try {
+        const d = await api('GET', 'cashflow/activity', params);
+        const tbody = document.getElementById('cfa-tbody');
+        if (!d.data.length) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">No activity found.</td></tr>`;
+        } else {
+            tbody.innerHTML = d.data.map(r => `
+                <tr>
+                    <td>${r.date_time}</td>
+                    <td>${r.username}</td>
+                    <td>${r.player_name}</td>
+                    <td>${r.mobile}</td>
+                    <td>${r.action_by}</td>
+                    <td>${r.description}</td>
+                </tr>`).join('');
+        }
+        renderPagination('cfa-pagination', d.current, d.pages, loadCashflowActivity);
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ROLES
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadRoles() {
+    try {
+        allRoles = await api('GET', 'roles');
+        const filterOpts = allRoles.map(r => `<option value="${r.id}">${r.name.toUpperCase()}</option>`).join('');
+        document.getElementById('adm-role').innerHTML = `<option value="all">ALL</option>${filterOpts}`;
+        document.getElementById('ma-role').innerHTML = filterOpts;
+    } catch(e) {
+        console.error('Failed to load roles:', e);
+    }
+}
+loadRoles();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ADMINS
@@ -1271,11 +1722,11 @@ document.getElementById('adm-create-btn').addEventListener('click', () => {
     document.getElementById('modal-admin-title').textContent = 'Create Admin';
     document.getElementById('modal-admin-id').value = '';
     document.getElementById('ma-pw-hint').style.display = 'none';
-    ['ma-username','ma-fullname','ma-email','ma-password'].forEach(id => {
+    ['ma-username','ma-fullname','ma-email','ma-phone','ma-password'].forEach(id => {
         document.getElementById(id).value = '';
     });
-    document.getElementById('ma-role').value   = 'admin';
-    document.getElementById('ma-status').value = 'active';
+    document.getElementById('ma-role').value   = allRoles.length ? allRoles[0].name : '';
+    document.getElementById('ma-status').value = 10;
     document.getElementById('ma-username').disabled = false;
     openModal('modal-admin');
 });
@@ -1301,7 +1752,7 @@ async function loadAdmins() {
                 <td>${a.last_login}</td>
                 <td style="text-align:right;">
                     <button class="tbl-btn" onclick="adminEdit(${JSON.stringify(a).replace(/"/g,'&quot;')})">EDIT</button>
-                    <button class="tbl-btn">IP</button>
+                    <button class="tbl-btn" onclick="adminShowIp(${JSON.stringify(a).replace(/"/g,'&quot;')})">IP</button>
                 </td>
             </tr>`).join('');
     } catch(e) {
@@ -1315,7 +1766,8 @@ function adminEdit(a) {
     document.getElementById('ma-username').value             = a.username;
     document.getElementById('ma-username').disabled          = true;
     document.getElementById('ma-fullname').value             = a.name;
-    document.getElementById('ma-email').value                = '';
+    document.getElementById('ma-email').value                = a.email;
+    document.getElementById('ma-phone').value               = a.phone_number ?? '';
     document.getElementById('ma-password').value             = '';
     document.getElementById('ma-pw-hint').style.display      = '';
     document.getElementById('ma-role').value                 = a.role;
@@ -1323,13 +1775,21 @@ function adminEdit(a) {
     openModal('modal-admin');
 }
 
+function adminShowIp(a) {
+    document.getElementById('mip-username').textContent = a.username;
+    document.getElementById('mip-ip').textContent       = a.last_login_ip;
+    document.getElementById('mip-date').textContent     = a.last_login;
+    openModal('modal-admin-ip');
+}
+
 document.getElementById('modal-admin-save').addEventListener('click', async () => {
     const id   = document.getElementById('modal-admin-id').value;
     const body = {
-        username: document.getElementById('ma-username').value,
-        fullname: document.getElementById('ma-fullname').value,
-        email:    document.getElementById('ma-email').value,
-        password: document.getElementById('ma-password').value,
+        username:     document.getElementById('ma-username').value,
+        fullname:     document.getElementById('ma-fullname').value,
+        email:        document.getElementById('ma-email').value,
+        phone_number: document.getElementById('ma-phone').value,
+        password:     document.getElementById('ma-password').value,
         role:     document.getElementById('ma-role').value,
         status:   document.getElementById('ma-status').value,
     };

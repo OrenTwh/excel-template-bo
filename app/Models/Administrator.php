@@ -29,6 +29,12 @@ class Administrator extends Authenticatable
         'calling_code',
         'role',
         'status',
+        'last_login_at',
+        'last_login_ip',
+    ];
+
+    protected $casts = [
+        'last_login_at' => 'datetime',
     ];
 
     public function owner() {

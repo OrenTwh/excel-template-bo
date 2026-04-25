@@ -82,6 +82,14 @@ td.xl-editing .xc{background:#fff;white-space:pre}
 td.saving::after{content:'💾';position:absolute;top:0;right:1px;font-size:9px;opacity:.6}
 td.save-err{outline:2px solid #c00!important}
 
+/* date input inside cells */
+td .date-input{width:100%;height:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'Segoe UI',Arial,sans-serif;padding:0 3px;line-height:20px;text-align:center;cursor:pointer;color:#333}
+td .date-input::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.6}
+td .date-input::-webkit-calendar-picker-indicator:hover{opacity:1}
+
+/* currency select inside cells */
+td .currency-select{width:100%;height:100%;border:none;outline:none;background:transparent;font-size:12px;font-family:'Segoe UI',Arial,sans-serif;padding:0 2px;line-height:20px;cursor:pointer;color:#333;font-weight:600;text-align:center}
+
 /* ── Column resize handle ────────────────────────────────────────────────── */
 th.resizable{position:relative}
 th.resizable .col-rz{position:absolute;right:0;top:0;width:5px;height:100%;cursor:col-resize;z-index:6;user-select:none}
@@ -220,7 +228,7 @@ const ROUTES = {
 };
 
 // Build a URL from a named route, substituting :id when needed
-function r(name, id = null) {
+function route(name, id = null) {
     const url = ROUTES[name];
     return id !== null ? url.replace(':id', id) : url;
 }
@@ -271,6 +279,8 @@ class ExcelGrid {
     }
 
     _onMousedown(e) {
+        // Let native date inputs and currency selects handle their own events
+        if (e.target.closest('.date-input') || e.target.closest('.currency-select')) return;
         const td = e.target.closest('td[data-r]');
         if (!td) return;
         if (this.editing && td !== this.sel) this._commitEdit();
@@ -358,6 +368,8 @@ class ExcelGrid {
     }
 
     _onKeydown(e) {
+        // Let native date inputs and currency selects handle their own events
+        if (e.target.closest('.date-input') || e.target.closest('.currency-select')) return;
         if (!this.sel) return;
 
         // editing mode
@@ -433,7 +445,7 @@ document.getElementById('ctx-del-row').addEventListener('click', () => {
     const custId = tr?.dataset.custId;
     if (!txId && !arrId) return;
     if (!confirm('Delete this row?')) return;
-    const url = txId ? r('txDelete', txId) : r('arrDelete', arrId);
+    const url = txId ? route('txDelete', txId) : route('arrDelete', arrId);
     api('DELETE', url).then(() => { tr.remove(); reindexRows(tr.closest('tbody')); if(custId) refreshCustHeader(parseInt(custId)); }).catch(e => alert(e.message));
 });
 document.getElementById('ctx-ins-below').addEventListener('click', () => {
@@ -724,7 +736,7 @@ const custData = {}; // cache: custId → {customer, summary, transactions, arra
 async function loadCust(custId) {
     ld(`ld-cust-${custId}`,true); st('Loading…');
     try {
-        const d = await api('GET', r('customer', custId));
+        const d = await api('GET', route('customer', custId));
         custData[custId] = d;
         renderCust(custId, d);
         activateGrid(`ct-cust-${custId}`);
@@ -853,7 +865,7 @@ function txRowHtml(tx, idx, custId) {
     const cell = (ci, field, val, cls='', readOnly=false) => {
         const ro       = readOnly ? 'ro' : '';
         const edit     = readOnly ? '' : 'data-editable="1"';
-        const savePath = readOnly ? '' : `data-save-path="${r('txUpdate', txId)}" data-save-method="PUT" data-save-field="${field}"`;
+        const savePath = readOnly ? '' : `data-save-path="${route('txUpdate', txId)}" data-save-method="PUT" data-save-field="${field}"`;
         const formula  = readOnly && field ? `data-formula="${field}"` : '';
         const recalc   = (!readOnly && recalcFields.has(field)) ? 'data-recalc-row="1"' : '';
         return `<td class="${cls}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" ${edit} ${savePath} ${formula} ${recalc}>
@@ -887,9 +899,31 @@ function newTxRowHtml(custId, idx) {
     const ro     = [0,0,0,0,0,1,0,0,0,0,1,1];
     return `<tr data-new-tx="${custId}" data-cust-id="${custId}" data-row-idx="${idx}" data-r="${r}">
         <th class="rh dim">*</th>
-        ${fields.map((f,ci) => `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" ${ro[ci]?'':' data-editable="1" data-new-tx-field="'+f+'"'}>
-            <span class="xc ${ro[ci]?'ro dim':''}" ${!ro[ci]?'data-placeholder="'+f+'"':''}></span>
-        </td>`).join('')}
+        ${fields.map((f,ci) => {
+            if (f === 'date') {
+                return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" data-new-tx-field="date">
+                    <input type="date" class="date-input" data-date-field="1">
+                </td>`;
+            }
+            if (f === 'currency') {
+                return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" data-new-tx-field="currency">
+                    <select class="currency-select">
+                        <option value="">—</option>
+                        <option value="AUD">AUD</option>
+                        <option value="PGK">PGK</option>
+                        <option value="MYR">MYR</option>
+                        <option value="SGD">SGD</option>
+                        <option value="USDT">USDT</option>
+                        <option value="ABA USD">ABA USD</option>
+                        <option value="THB">THB</option>
+                        <option value="VND">VND</option>
+                    </select>
+                </td>`;
+            }
+            return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" ${ro[ci]?'':' data-editable="1" data-new-tx-field="'+f+'"'}>
+                <span class="xc ${ro[ci]?'ro dim':''}" ${!ro[ci]?'data-placeholder="'+f+'"':''}></span>
+            </td>`;
+        }).join('')}
     </tr>`;
 }
 
@@ -897,7 +931,7 @@ function newTxRowHtml(custId, idx) {
 function arrRowHtml(arr, idx, custId) {
     const r = 7 + idx;
     const cell = (ci, field, val, cls='') => `<td class="${cls}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}"
-        data-editable="1" data-save-path="${r('arrUpdate', arr.id)}" data-save-method="PUT" data-save-field="${field}">
+        data-editable="1" data-save-path="${route('arrUpdate', arr.id)}" data-save-method="PUT" data-save-field="${field}">
         <span class="xc">${val}</span></td>`;
     return `<tr data-arr-id="${arr.id}" data-cust-id="${custId}" data-row-idx="${idx}" class="${arr.is_done?'bg-lgreen':''}">
         <th class="rh">${r}</th>
@@ -918,9 +952,16 @@ function newArrRowHtml(custId, idx) {
     const cls    = ['bg-yellow ctr','','','','bg-lblue num','bg-lgreen num','ctr',''];
     return `<tr data-new-arr="${custId}" data-cust-id="${custId}" data-row-idx="${idx}" data-r="${r}">
         <th class="rh dim">*</th>
-        ${fields.map((f,ci) => `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" data-editable="1" data-new-arr-field="${f}">
-            <span class="xc dim" data-placeholder="${f}"></span>
-        </td>`).join('')}
+        ${fields.map((f,ci) => {
+            if (f === 'date') {
+                return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" data-new-arr-field="date">
+                    <input type="date" class="date-input" data-date-field="1">
+                </td>`;
+            }
+            return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" data-editable="1" data-new-arr-field="${f}">
+                <span class="xc dim" data-placeholder="${f}"></span>
+            </td>`;
+        }).join('')}
     </tr>`;
 }
 
@@ -948,7 +989,11 @@ document.getElementById('sheet-area').addEventListener('keydown', async e => {
 async function saveNewTxRow(custId, tr) {
     const cells = [...tr.querySelectorAll('[data-new-tx-field]')];
     const data  = { fx_customer_id: custId };
-    cells.forEach(td => { data[td.dataset.newTxField] = td.querySelector('.xc').textContent.trim(); });
+    cells.forEach(td => {
+        const dateInput    = td.querySelector('.date-input');
+        const currSelect   = td.querySelector('.currency-select');
+        data[td.dataset.newTxField] = dateInput ? dateInput.value : currSelect ? currSelect.value : td.querySelector('.xc').textContent.trim();
+    });
     if (!data.date) { st('Date is required'); return; }
     try {
         st('Saving…');
@@ -967,7 +1012,10 @@ async function saveNewTxRow(custId, tr) {
 async function saveNewArrRow(custId, tr) {
     const cells = [...tr.querySelectorAll('[data-new-arr-field]')];
     const data  = { fx_customer_id: custId };
-    cells.forEach(td => { data[td.dataset.newArrField] = td.querySelector('.xc').textContent.trim(); });
+    cells.forEach(td => {
+        const dateInput = td.querySelector('.date-input');
+        data[td.dataset.newArrField] = dateInput ? dateInput.value : td.querySelector('.xc').textContent.trim();
+    });
     if (!data.date) { st('Date is required'); return; }
     try {
         st('Saving…');
@@ -1006,7 +1054,7 @@ function recalcRow(tr) {
 async function deleteTxRow(txId, custId, tr) {
     if (!confirm('Delete this row?')) return;
     try {
-        await api('DELETE', r('txDelete', txId));
+        await api('DELETE', route('txDelete', txId));
         tr.remove();
         reindexRows(document.getElementById(`tx-body-${custId}`));
         refreshCustHeader(custId);
@@ -1034,7 +1082,7 @@ function addNewTxRow(custId, refTr, above = false) {
 // ── Refresh customer header after edits ───────────────────────────────────────
 async function refreshCustHeader(custId) {
     try {
-        const d = await api('GET', r('customer', custId));
+        const d = await api('GET', route('customer', custId));
         custData[custId] = d;
         const s = d.summary;
         const set = (id, val) => { const el=document.getElementById(id); if(el) { const xc=el.querySelector('.xc'); (xc||el).textContent=val; } };
@@ -1054,7 +1102,7 @@ async function refreshCustHeader(custId) {
 // ── Toggle Check Today ────────────────────────────────────────────────────────
 async function toggleToday(custId) {
     try {
-        const d = await api('POST', r('toggleToday', custId));
+        const d = await api('POST', route('toggleToday', custId));
         const btn = document.getElementById(`cust-today-btn-${custId}`);
         if(btn){ btn.textContent = d.check_today ? 'TODAY ONLY' : 'ALL TIME'; btn.style.background=d.check_today?'#e67e22':'#1a5c38'; }
         await refreshCustHeader(custId);

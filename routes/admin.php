@@ -73,12 +73,13 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
                 Route::post( 'seen-notification', [ CoreController::class, 'seenNotification' ] )->name( 'admin.core.seenNotification' );
             } );
 
-            Route::get( '/', function() {
-                return redirect()->route( 'admin.dashboard' );
-            } )->name( 'admin.home' );
+            Route::get('/', function() {
+                return redirect()->route('bo.index');
+            })->name('admin.home');
 
             // ── Docs ─────────────────────────────────────────────────────────────
             Route::get( 'docs', function() { return view('docs.index'); } )->name( 'docs.index' );
+            Route::get( 'docs-cn', function() { return view('docs_cn.index'); } )->name( 'docs_cn.index' );
             // ────────────────────────────────────────────────────────────────────
 
             // ── FX Spreadsheet ───────────────────────────────────────────────────
@@ -130,8 +131,21 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
                 Route::put(  'bank-transactions/{id}',     [ BoDashboardController::class, 'bankTransactionUpdate'] )->name( 'bo.bank_transactions.update' );
                 Route::delete( 'bank-transactions/{id}',   [ BoDashboardController::class, 'bankTransactionDelete'] )->name( 'bo.bank_transactions.delete' );
 
-                // Cashflow
+                // Cashflow / Reports
                 Route::get(  'cashflow',                   [ BoDashboardController::class, 'cashflow'             ] )->name( 'bo.cashflow' );
+                Route::get(  'cashflow/bank',              [ BoDashboardController::class, 'cashflowBank'         ] )->name( 'bo.cashflow.bank' );
+                Route::get(  'cashflow/staff',             [ BoDashboardController::class, 'cashflowStaff'        ] )->name( 'bo.cashflow.staff' );
+                Route::get(  'cashflow/activity',          [ BoDashboardController::class, 'cashflowActivity'     ] )->name( 'bo.cashflow.activity' );
+
+                // Customers
+                Route::get(  'customers',                  [ BoDashboardController::class, 'customers'            ] )->name( 'bo.customers' );
+                Route::post( 'customers',                  [ BoDashboardController::class, 'customerStore'        ] )->name( 'bo.customers.store' );
+                Route::post( 'customers/transactions',     [ BoDashboardController::class, 'customerTxStore'      ] )->name( 'bo.customer_tx.store' );
+                Route::put(  'customers/transactions/{id}',[ BoDashboardController::class, 'customerTxUpdate'     ] )->name( 'bo.customer_tx.update' );
+                Route::get(  'customers/{id}',             [ BoDashboardController::class, 'customer'             ] )->name( 'bo.customer' );
+
+                // Roles
+                Route::get(  'roles',                      [ BoDashboardController::class, 'roles'                ] )->name( 'bo.roles' );
 
                 // Admins
                 Route::get(  'admins',                     [ BoDashboardController::class, 'admins'               ] )->name( 'bo.admins' );
