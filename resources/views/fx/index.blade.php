@@ -32,10 +32,12 @@ html,body{height:100%;font-family:'Segoe UI',Arial,sans-serif;font-size:12px;bac
 
 /* ── Tab bar ─────────────────────────────────────────────────────────────── */
 #tab-bar{background:#d4d4d4;border-top:2px solid #217346;display:flex;align-items:flex-end;padding:0 4px;flex-shrink:0;height:26px;overflow-x:auto;gap:1px}
-.tab{padding:3px 14px;background:#bbb;border:1px solid #999;border-bottom:none;cursor:pointer;font-size:11px;border-radius:3px 3px 0 0;white-space:nowrap;color:#444}
+.tab{padding:3px 14px;background:#bbb;border:1px solid #999;border-bottom:none;cursor:pointer;font-size:11px;border-radius:3px 3px 0 0;white-space:nowrap;color:#444;display:flex;align-items:center;gap:5px}
 .tab:hover{background:#ccc}
 .tab.active{background:#fff;color:#000;font-weight:600;border-color:#aaa}
 .tab-add{padding:2px 10px;background:none;border:none;cursor:pointer;font-size:15px;color:#555;line-height:1;flex-shrink:0}
+.tab-del{font-size:13px;line-height:1;color:#888;padding:0 1px;border-radius:2px}
+.tab-del:hover{background:#c00;color:#fff}
 
 /* ── Excel table ─────────────────────────────────────────────────────────── */
 .xl{border-collapse:collapse;table-layout:fixed;border-spacing:0}
@@ -178,7 +180,7 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115
     <div class="tab active" data-sv="master">总表</div>
     <div class="tab" data-sv="detail">总表详情</div>
     @foreach($customers as $c)
-    <div class="tab" data-sv="cust-{{ $c->id }}" data-cid="{{ $c->id }}">{{ $c->name }}</div>
+    <div class="tab" data-sv="cust-{{ $c->id }}" data-cid="{{ $c->id }}">{{ $c->name }}<span class="tab-del" data-cid="{{ $c->id }}" title="Remove customer">✕</span></div>
     @endforeach
     <button class="tab-add" id="btn-add-tab" title="Add customer">+</button>
 </div>
@@ -204,6 +206,28 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115
     </div>
 </div>
 
+<!-- edit customer modal -->
+<div class="mo" id="mo-cust-edit">
+    <div class="mb">
+        <div class="mh"><span>Edit Customer</span><button class="mc-btn" data-close="mo-cust-edit">&times;</button></div>
+        <div class="mbody">
+            <div class="mf"><label>Name *</label><input id="me-name" type="text"></div>
+            <div class="mf"><label>Opening Balance (MYR)</label><input id="me-bal" type="number" step="0.01"></div>
+            <div class="mf"><label>Status</label>
+                <select id="me-status" style="width:100%;border:1px solid #ccc;padding:3px 6px;font-size:12px;height:27px;outline:none">
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+        </div>
+        <div class="mfoot">
+            <button class="btn-del" id="me-delete">Delete</button>
+            <button class="btn-cancel" data-close="mo-cust-edit">Cancel</button>
+            <button class="btn-save" id="me-save">Save</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════════════════════════
 // CONFIG & HELPERS
@@ -218,6 +242,8 @@ const ROUTES = {
     customer:     '{{ route("fx.customer",      ["id" => ":id"]) }}',
     customers:    '{{ route("fx.customers") }}',
     custStore:    '{{ route("fx.customers.store") }}',
+    custUpdate:   '{{ route("fx.customers.update", ["id" => ":id"]) }}',
+    custDelete:   '{{ route("fx.customers.delete", ["id" => ":id"]) }}',
     toggleToday:  '{{ route("fx.customers.toggle", ["id" => ":id"]) }}',
     txStore:      '{{ route("fx.transactions.store") }}',
     txUpdate:     '{{ route("fx.transactions.update", ["id" => ":id"]) }}',
@@ -485,6 +511,13 @@ function switchTab(svId) {
 
 document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.sv)));
 
+document.querySelectorAll('.tab-del').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteCustomer(parseInt(btn.dataset.cid), btn.closest('.tab'));
+    });
+});
+
 function loadSheet(sv) {
     if (sv === 'master') loadMaster();
     else if (sv === 'detail') loadDetail();
@@ -736,7 +769,7 @@ const custData = {}; // cache: custId → {customer, summary, transactions, arra
 async function loadCust(custId) {
     ld(`ld-cust-${custId}`,true); st('Loading…');
     try {
-        const d = await api('GET', route('customer', custId));
+        const d = await api('GET', route('customer', custId), getYM());
         custData[custId] = d;
         renderCust(custId, d);
         activateGrid(`ct-cust-${custId}`);
@@ -761,6 +794,10 @@ function renderCust(custId, d) {
         <button onclick="toggleToday(${custId})" id="cust-today-btn-${custId}"
             style="background:${summary.check_today?'#e67e22':'#1a5c38'};border:1px solid rgba(255,255,255,.3);color:#fff;padding:2px 10px;cursor:pointer;font-size:11px;border-radius:2px">
             ${summary.check_today ? 'TODAY ONLY' : 'ALL TIME'}
+        </button>
+        <button onclick="openCustEdit(${custId})"
+            style="background:#1a5c38;border:1px solid rgba(255,255,255,.3);color:#fff;padding:2px 10px;cursor:pointer;font-size:11px;border-radius:2px;margin-left:auto">
+            ✏ Edit
         </button>
     </div>
     <!-- totals strip -->
@@ -1109,6 +1146,65 @@ async function toggleToday(custId) {
     } catch(e) { alert(e.message); }
 }
 
+// ── Edit Customer ─────────────────────────────────────────────────────────────
+let editingCustId = null;
+
+function openCustEdit(custId) {
+    editingCustId = custId;
+    const d = custData[custId];
+    if (!d) return;
+    const c = d.customer;
+    document.getElementById('me-name').value   = c.name;
+    document.getElementById('me-bal').value    = c.initial_balance ?? 0;
+    document.getElementById('me-status').value = c.status ?? 'active';
+    openMo('mo-cust-edit');
+}
+
+document.getElementById('me-save').addEventListener('click', async () => {
+    if (!editingCustId) return;
+    const name = document.getElementById('me-name').value.trim();
+    if (!name) { alert('Name is required'); return; }
+    try {
+        const resp = await api('PUT', route('custUpdate', editingCustId), {
+            name,
+            initial_balance: document.getElementById('me-bal').value,
+            status:          document.getElementById('me-status').value,
+        });
+        // update tab text node without removing the ✕ span
+        const tab = document.querySelector(`.tab[data-cid="${editingCustId}"]`);
+        if (tab) {
+            const span = tab.querySelector('.tab-del');
+            tab.textContent = '';
+            tab.appendChild(document.createTextNode(resp.customer.name));
+            if (span) tab.appendChild(span);
+        }
+        closeMo('mo-cust-edit');
+        // reload sheet to reflect new name/balance
+        loaded.delete(`cust-${editingCustId}`);
+        loadCust(editingCustId);
+        st('Customer updated');
+    } catch(e) { alert('Error: ' + e.message); }
+});
+
+document.getElementById('me-delete').addEventListener('click', () => {
+    closeMo('mo-cust-edit');
+    const tab = document.querySelector(`.tab[data-cid="${editingCustId}"]`);
+    if (tab) deleteCustomer(editingCustId, tab);
+});
+
+// ── Delete Customer ───────────────────────────────────────────────────────────
+async function deleteCustomer(id, tabEl) {
+    if (!confirm('Delete this customer and remove their sheet? This cannot be undone.')) return;
+    try {
+        await api('DELETE', route('custDelete', id));
+        const svId = `cust-${id}`;
+        document.getElementById(`sv-${svId}`)?.remove();
+        if (activeSv === svId) switchTab('master');
+        tabEl.remove();
+        st('Customer deleted');
+    } catch(e) { alert(e.message); }
+}
+
 // ── Add Customer ──────────────────────────────────────────────────────────────
 ['tb-add-cust','btn-add-tab'].forEach(id => document.getElementById(id)?.addEventListener('click', () => {
     document.getElementById('mc-name').value='';
@@ -1130,8 +1226,10 @@ document.getElementById('mc-save').addEventListener('click', async () => {
         // add tab
         const tb = document.getElementById('tab-bar');
         const tab= document.createElement('div');
-        tab.className='tab'; tab.dataset.sv=`cust-${c.id}`; tab.dataset.cid=c.id; tab.textContent=c.name;
+        tab.className='tab'; tab.dataset.sv=`cust-${c.id}`; tab.dataset.cid=c.id;
+        tab.innerHTML=`${c.name}<span class="tab-del" data-cid="${c.id}" title="Remove customer">✕</span>`;
         tab.addEventListener('click', ()=>switchTab(tab.dataset.sv));
+        tab.querySelector('.tab-del').addEventListener('click', e => { e.stopPropagation(); deleteCustomer(c.id, tab); });
         tb.insertBefore(tab, document.getElementById('btn-add-tab'));
         closeMo('mo-cust');
         switchTab(`cust-${c.id}`);

@@ -75,21 +75,24 @@ class FxController extends Controller
     public function customer(Request $request, int $id)
     {
         $customer = FxCustomer::findOrFail($id);
-        $summary  = $this->fx->customerSummary($customer);
+        $year     = $request->filled('year')  ? (int) $request->year  : null;
+        $month    = $request->filled('month') ? (int) $request->month : null;
 
-        $transactions = FxTransaction::where('fx_customer_id', $id)
-            ->orderBy('date')->orderBy('id')
-            ->get();
+        $summary  = $this->fx->customerSummary($customer, $year, $month);
 
-        $arrangements = FxArrangement::where('fx_customer_id', $id)
-            ->orderBy('date')->orderBy('id')
-            ->get();
+        $txQuery  = FxTransaction::where('fx_customer_id', $id)->orderBy('date')->orderBy('id');
+        $arrQuery = FxArrangement::where('fx_customer_id', $id)->orderBy('date')->orderBy('id');
+
+        if ($year && $month) {
+            $txQuery->whereYear('date',  $year)->whereMonth('date',  $month);
+            $arrQuery->whereYear('date', $year)->whereMonth('date', $month);
+        }
 
         return response()->json([
             'customer'     => $customer,
             'summary'      => $summary,
-            'transactions' => $transactions,
-            'arrangements' => $arrangements,
+            'transactions' => $txQuery->get(),
+            'arrangements' => $arrQuery->get(),
         ]);
     }
 
@@ -118,11 +121,35 @@ class FxController extends Controller
         return response()->json(['success' => true, 'customer' => $customer]);
     }
 
+    public function customerUpdate(Request $request, int $id)
+    {
+        $request->validate([
+            'name'            => 'required|string|max:100|unique:fx_customers,name,'.$id,
+            'initial_balance' => 'nullable|numeric',
+            'status'          => 'nullable|in:active,inactive',
+        ]);
+
+        $customer = FxCustomer::findOrFail($id);
+        $customer->update([
+            'name'            => $request->name,
+            'initial_balance' => $request->initial_balance ?? $customer->initial_balance,
+            'status'          => $request->status          ?? $customer->status,
+        ]);
+
+        return response()->json(['success' => true, 'customer' => $customer->fresh()]);
+    }
+
     public function customerToggleCheckToday(int $id)
     {
         $customer = FxCustomer::findOrFail($id);
         $customer->update(['check_today' => !$customer->check_today]);
         return response()->json(['check_today' => $customer->check_today]);
+    }
+
+    public function customerDelete(int $id)
+    {
+        FxCustomer::findOrFail($id)->delete();
+        return response()->json(['success' => true]);
     }
 
     // ── Transaction CRUD ──────────────────────────────────────────────────────

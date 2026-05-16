@@ -85,13 +85,14 @@ class FxSpreadsheetService
      * Returns array matching the TOTAL row:
      *   amount_in, amount_out, myr_converted, myr_out, myr_in
      */
-    public function customerTotals(FxCustomer $customer): array
+    public function customerTotals(FxCustomer $customer, ?int $year = null, ?int $month = null): array
     {
         $query = FxTransaction::where('fx_customer_id', $customer->id);
 
         if ($customer->check_today) {
-            // SUMIF(A:A, TODAY(), …)
             $query->whereDate('date', Carbon::today());
+        } elseif ($year && $month) {
+            $query->whereYear('date', $year)->whereMonth('date', $month);
         }
 
         $row = $query->selectRaw('
@@ -115,10 +116,13 @@ class FxSpreadsheetService
      * Sheet:  L6 = SUM(L7:L9998)
      * Label:  TOTAL PROFIT (always all-time, ignores check_today)
      */
-    public function customerTotalProfit(FxCustomer $customer): float
+    public function customerTotalProfit(FxCustomer $customer, ?int $year = null, ?int $month = null): float
     {
-        return (float) FxTransaction::where('fx_customer_id', $customer->id)
-            ->sum('profit');
+        $query = FxTransaction::where('fx_customer_id', $customer->id);
+        if ($year && $month) {
+            $query->whereYear('date', $year)->whereMonth('date', $month);
+        }
+        return (float) $query->sum('profit');
     }
 
     /**
@@ -128,14 +132,16 @@ class FxSpreadsheetService
      * Label:  PENDING MYR
      * Logic:  total_arranging − total_done
      */
-    public function customerPendingMyr(FxCustomer $customer): float
+    public function customerPendingMyr(FxCustomer $customer, ?int $year = null, ?int $month = null): float
     {
-        $row = FxArrangement::where('fx_customer_id', $customer->id)
-            ->selectRaw('
-                SUM(arranging_amount) as total_arranging,
-                SUM(done_amount)      as total_done
-            ')
-            ->first();
+        $query = FxArrangement::where('fx_customer_id', $customer->id);
+        if ($year && $month) {
+            $query->whereYear('date', $year)->whereMonth('date', $month);
+        }
+        $row = $query->selectRaw('
+            SUM(arranging_amount) as total_arranging,
+            SUM(done_amount)      as total_done
+        ')->first();
 
         return (float) $row->total_arranging - (float) $row->total_done;
     }
@@ -144,15 +150,15 @@ class FxSpreadsheetService
      * Full user-sheet summary for one customer.
      * Combines balance, totals, profit, pending into one payload.
      */
-    public function customerSummary(FxCustomer $customer): array
+    public function customerSummary(FxCustomer $customer, ?int $year = null, ?int $month = null): array
     {
         return [
             'name'           => $customer->name,
-            'balance'        => $this->customerBalance($customer),       // B2
-            'pending_myr'    => $this->customerPendingMyr($customer),   // O4
-            'total_profit'   => $this->customerTotalProfit($customer),  // L6
-            'totals'         => $this->customerTotals($customer),        // row 6
-            'check_today'    => $customer->check_today,                  // L1
+            'balance'        => $this->customerBalance($customer),                         // B2 — always all-time
+            'pending_myr'    => $this->customerPendingMyr($customer, $year, $month),      // O4
+            'total_profit'   => $this->customerTotalProfit($customer, $year, $month),     // L6
+            'totals'         => $this->customerTotals($customer, $year, $month),           // row 6
+            'check_today'    => $customer->check_today,                                    // L1
         ];
     }
 

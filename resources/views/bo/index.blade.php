@@ -339,9 +339,13 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
         <!-- arrows icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M4 17h12m0 0l-4-4m4 4l-4 4"/></svg>
     </button>
-    <button class="nav-btn" data-page="banktx"        title="Customers">
+    <button class="nav-btn" data-page="banktx"        title="FX Ledger">
         <!-- grid icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </button>
+    <button class="nav-btn" data-page="customers"     title="Customers">
+        <!-- person icon -->
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
     </button>
     <button class="nav-btn" data-page="cashflow"      title="Cashflow">
         <!-- trend-up icon -->
@@ -366,89 +370,59 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <div id="page-transactions" class="page-section active">
     <div class="filter-wrap">
-        <!-- basic filters -->
-        <div class="filter-row">
-            <span class="filter-label">ID</span>
-            <span class="filter-colon">:</span>
-            <input id="tx-id" class="filter-input" type="text" placeholder="Search by Transaction ID">
-        </div>
         <div class="filter-row">
             <span class="filter-label">Customer</span>
             <span class="filter-colon">:</span>
-            <input id="tx-customer" class="filter-input" type="text" placeholder="Search by Customer ID / Phone">
+            <input id="tx-customer" class="filter-input" type="text" placeholder="Search by customer name">
         </div>
         <div class="filter-row">
-            <span class="filter-label">Type</span>
+            <span class="filter-label">Currency</span>
             <span class="filter-colon">:</span>
-            <select id="tx-type" class="filter-input">
-                <option value="all">ALL</option>
-                <option value=10 selected>ACTIVE</option>
-                <option value=20>INACTIVE</option>
+            <select id="tx-currency" class="filter-input">
+                <option value="">ALL</option>
+                <option value="AUD">AUD</option>
+                <option value="PGK">PGK</option>
+                <option value="MYR">MYR</option>
+                <option value="SGD">SGD</option>
+                <option value="USDT">USDT</option>
+                <option value="ABA USD">ABA USD</option>
+                <option value="THB">THB</option>
+                <option value="VND">VND</option>
             </select>
         </div>
         <div class="filter-row">
             <span class="filter-label">Date</span>
             <span class="filter-colon">:</span>
             <div class="filter-half">
-                <input id="tx-date-from" class="filter-input" type="date" value="{{ date('Y-m-d') }}">
-                <input id="tx-date-to"   class="filter-input" type="date" placeholder="End Date">
-            </div>
-        </div>
-        <div class="filter-row">
-            <span class="filter-label">Amount</span>
-            <span class="filter-colon">:</span>
-            <div class="filter-half">
-                <input id="tx-amount-min" class="filter-input" type="number" step="0.01" placeholder="Min">
-                <input id="tx-amount-max" class="filter-input" type="number" step="0.01" placeholder="Max">
-            </div>
-        </div>
-        <div class="filter-row">
-            <span class="filter-label">Status</span>
-            <span class="filter-colon">:</span>
-            <select id="tx-status" class="filter-input">
-                <option value="pending_new" selected>PENDING (NEW TO OLD)</option>
-                <option value="pending_old">PENDING (OLD TO NEW)</option>
-                <option value="approved">APPROVED</option>
-                <option value="rejected">REJECTED</option>
-            </select>
-        </div>
-        <!-- advanced filters (hidden by default) -->
-        <div id="tx-advanced-filters" style="display:none;">
-            <div class="filter-row">
-                <span class="filter-label">Agent</span>
-                <span class="filter-colon">:</span>
-                <input id="tx-agent" class="filter-input" type="text" placeholder="Search by agent username">
-            </div>
-            <div class="filter-row">
-                <span class="filter-label">Mer. Bank</span>
-                <span class="filter-colon">:</span>
-                <select id="tx-bank" class="filter-input">
-                    <option value="all">Please Select</option>
-                </select>
-            </div>
-            <div class="filter-row">
-                <span class="filter-label">Other Info</span>
-                <span class="filter-colon">:</span>
-                <input id="tx-other-info" class="filter-input" type="text" placeholder="e.g. Member Bank Acc No / Remark">
+                <input id="tx-date-from" class="filter-input" type="date" value="{{ date('Y-m-01') }}">
+                <input id="tx-date-to"   class="filter-input" type="date" value="{{ date('Y-m-d') }}">
             </div>
         </div>
     </div>
     <button class="btn-green" id="tx-search-btn">SEARCH</button>
-    <div id="tx-export-wrap" style="display:none;"><button class="btn-orange" id="tx-export-btn">EXPORT</button></div>
+    <button class="btn-orange" id="tx-export-btn">EXPORT</button>
     <div class="summary-row">
-        <span>Record: <strong id="tx-record-count">0</strong>&nbsp; Total: <strong id="tx-total">0.00</strong></span>
-        <a class="advanced-link" id="tx-advanced-toggle">ADVANCED &#9658;</a>
+        <span>Record: <strong id="tx-record-count">0</strong>&nbsp; MYR Conv. Total: <strong id="tx-total">0.00</strong></span>
     </div>
     <div style="overflow-x:auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Transaction</th>
-                    <th style="text-align:right;">Action</th>
+                    <th style="width:90px;">Date</th>
+                    <th>Customer</th>
+                    <th style="width:60px;">CCY</th>
+                    <th style="width:90px;text-align:right;">BUY IN</th>
+                    <th style="width:90px;text-align:right;">SELL OUT</th>
+                    <th style="width:80px;text-align:right;">Rate</th>
+                    <th style="width:100px;text-align:right;">MYR CONV.</th>
+                    <th style="width:80px;text-align:right;">MYR OUT</th>
+                    <th style="width:80px;text-align:right;">MYR IN</th>
+                    <th>Remark</th>
+                    <th style="width:80px;text-align:right;">Profit</th>
                 </tr>
             </thead>
             <tbody id="tx-tbody">
-                <tr><td colspan="2" style="text-align:center;color:#999;padding:20px;">Use the filters above and click SEARCH.</td></tr>
+                <tr><td colspan="11" style="text-align:center;color:#999;padding:20px;">Use the filters above and click SEARCH.</td></tr>
             </tbody>
         </table>
     </div>
@@ -686,26 +660,6 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
                 </table>
             </div>
 
-            <h3 style="color:#e04040;font-size:14px;margin:14px 0 6px;">Tips</h3>
-            <div style="overflow-x:auto;">
-                <table class="data-table">
-                    <thead><tr><th>Staff</th><th>Total</th><th>Amount</th></tr></thead>
-                    <tbody id="cfs-tips-tbody"></tbody>
-                    <tfoot><tr style="background:#fde8c8;">
-                        <td><strong>TOTAL</strong></td>
-                        <td id="cfs-tips-total">0</td>
-                        <td id="cfs-tips-amount">0.00</td>
-                    </tr></tfoot>
-                </table>
-            </div>
-
-            <h3 style="color:#e04040;font-size:14px;margin:14px 0 6px;">Rating</h3>
-            <div style="overflow-x:auto;">
-                <table class="data-table">
-                    <thead><tr><th>Staff</th><th>Total User</th><th>Rating</th><th>Tips</th><th>Average Rating</th></tr></thead>
-                    <tbody id="cfs-rating-tbody"></tbody>
-                </table>
-            </div>
         </div>
 
         <!-- ── Activity Log ───────────────────────────────────────── -->
@@ -832,6 +786,47 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
             </thead>
             <tbody id="adm-tbody">
                 <tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Click SEARCH to load.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: CUSTOMERS                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="page-customers" class="page-section">
+    <div class="filter-wrap">
+        <div class="filter-row">
+            <span class="filter-label">Search</span>
+            <span class="filter-colon">:</span>
+            <input id="bc-search" class="filter-input" type="text" placeholder="Filter by name…">
+        </div>
+        <div class="filter-row">
+            <span class="filter-label">Status</span>
+            <span class="filter-colon">:</span>
+            <select id="bc-status" class="filter-input">
+                <option value="all">ALL</option>
+                <option value="active" selected>ACTIVE</option>
+                <option value="inactive">INACTIVE</option>
+            </select>
+        </div>
+    </div>
+    <div style="padding:8px;">
+        <button class="create-btn" id="bc-create-btn">+ CREATE</button>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Initial Balance (MYR)</th>
+                    <th style="text-align:center;">Status</th>
+                    <th style="text-align:right;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="bc-tbody">
+                <tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">Loading…</td></tr>
             </tbody>
         </table>
     </div>
@@ -999,6 +994,31 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
     </div>
 </div>
 
+<!-- Customer Create / Edit Modal -->
+<div class="modal-overlay" id="modal-customer">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span id="modal-customer-title">Create Customer</span>
+            <button class="modal-close" data-close="modal-customer">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="bc-id">
+            <div class="modal-field"><label>Name *</label><input type="text" id="bc-name"></div>
+            <div class="modal-field"><label>Initial Balance (MYR)</label><input type="number" step="0.01" id="bc-bal" value="0"></div>
+            <div class="modal-field" id="bc-status-wrap" style="display:none;"><label>Status</label>
+                <select id="bc-status-field" style="width:100%;border:1px solid #ccc;padding:5px 8px;font-size:12px;height:30px;">
+                    <option value="active">ACTIVE</option>
+                    <option value="inactive">INACTIVE</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" data-close="modal-customer">Cancel</button>
+            <button class="btn-save" id="bc-save">Create</button>
+        </div>
+    </div>
+</div>
+
 <!-- Bank History Modal -->
 <div class="modal-overlay" id="modal-bank-history">
     <div class="modal-box" style="width:700px;">
@@ -1099,9 +1119,10 @@ document.querySelectorAll('#nav-bar .nav-btn').forEach(btn => {
         document.getElementById(`page-${page}`).classList.add('active');
 
         // lazy-load on first visit
-        if (page === 'banks')    loadBanks();
-        if (page === 'banktx')   initCustomerTx();
-        if (page === 'cashflow') loadCashflow();
+        if (page === 'banks')     loadBanks();
+        if (page === 'banktx')    initCustomerTx();
+        if (page === 'cashflow')  loadCashflow();
+        if (page === 'customers') initBoCustomers();
     });
 });
 
@@ -1119,35 +1140,26 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
 // ─────────────────────────────────────────────────────────────────────────────
 // TRANSACTIONS
 // ─────────────────────────────────────────────────────────────────────────────
-document.getElementById('tx-advanced-toggle').addEventListener('click', () => {
-    txAdvanced = !txAdvanced;
-    document.getElementById('tx-advanced-filters').style.display = txAdvanced ? '' : 'none';
-    document.getElementById('tx-export-wrap').style.display      = txAdvanced ? '' : 'none';
-    document.getElementById('tx-advanced-toggle').textContent    = txAdvanced ? 'ADVANCED ◀' : 'ADVANCED ▶';
-});
-
 document.getElementById('tx-search-btn').addEventListener('click', loadTransactions);
 document.getElementById('tx-export-btn')?.addEventListener('click', () => {
-    api('GET', 'transactions/export').then(() => alert('Export queued.')).catch(e => alert(e.message));
+    const params = new URLSearchParams({
+        customer:  document.getElementById('tx-customer').value,
+        currency:  document.getElementById('tx-currency').value,
+        date_from: document.getElementById('tx-date-from').value,
+        date_to:   document.getElementById('tx-date-to').value,
+    });
+    [...params.keys()].forEach(k => { if (!params.get(k)) params.delete(k); });
+    window.location.href = `${API}/transactions/export?${params.toString()}`;
 });
 
 async function loadTransactions(page = 1) {
     const params = {
-        transaction_id: document.getElementById('tx-id').value,
-        customer:       document.getElementById('tx-customer').value,
-        type:           document.getElementById('tx-type').value,
-        date_from:      document.getElementById('tx-date-from').value,
-        date_to:        document.getElementById('tx-date-to').value,
-        amount_min:     document.getElementById('tx-amount-min').value,
-        amount_max:     document.getElementById('tx-amount-max').value,
-        status_order:   document.getElementById('tx-status').value,
+        customer:  document.getElementById('tx-customer').value,
+        currency:  document.getElementById('tx-currency').value,
+        date_from: document.getElementById('tx-date-from').value,
+        date_to:   document.getElementById('tx-date-to').value,
         page,
     };
-    if (txAdvanced) {
-        params.agent      = document.getElementById('tx-agent').value;
-        params.bo_bank_id = document.getElementById('tx-bank').value;
-        params.other_info = document.getElementById('tx-other-info').value;
-    }
     try {
         const d = await api('GET', 'transactions', params);
         document.getElementById('tx-record-count').textContent = d.records;
@@ -1155,19 +1167,22 @@ async function loadTransactions(page = 1) {
 
         const tbody = document.getElementById('tx-tbody');
         if (!d.data.length) {
-            tbody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:#999;padding:20px;">No records found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;color:#999;padding:20px;">No records found.</td></tr>`;
             return;
         }
         tbody.innerHTML = d.data.map(tx => `
             <tr>
-                <td>
-                    <div><strong>${tx.transaction_id}</strong></div>
-                    <div style="color:#666;font-size:11px;">${tx.customer_id ?? ''} ${tx.customer_phone ?? ''} &bull; ${tx.type} &bull; ${tx.status}</div>
-                    <div style="color:#333;">${tx.amount}</div>
-                </td>
-                <td style="text-align:right;">
-                    <button class="tbl-btn">VIEW</button>
-                </td>
+                <td>${(tx.date ?? '').substring(0, 10)}</td>
+                <td>${tx.customer?.name ?? ''}</td>
+                <td>${tx.currency ?? ''}</td>
+                <td style="text-align:right;">${parseFloat(tx.amount_in  ?? 0).toFixed(4)}</td>
+                <td style="text-align:right;">${parseFloat(tx.amount_out ?? 0).toFixed(4)}</td>
+                <td style="text-align:right;">${parseFloat(tx.rate       ?? 0).toFixed(6)}</td>
+                <td style="text-align:right;">${parseFloat(tx.myr_converted ?? 0).toFixed(2)}</td>
+                <td style="text-align:right;">${parseFloat(tx.myr_out    ?? 0).toFixed(2)}</td>
+                <td style="text-align:right;">${parseFloat(tx.myr_in     ?? 0).toFixed(2)}</td>
+                <td>${tx.remark ?? ''}</td>
+                <td style="text-align:right;">${parseFloat(tx.profit     ?? 0).toFixed(2)}</td>
             </tr>`).join('');
 
         renderPagination('tx-pagination', d.current, d.pages, loadTransactions);
@@ -1229,8 +1244,7 @@ function renderBanks(banks) {
 }
 
 function refreshBankDropdowns() {
-    const opts = allBanks.map(b => `<option value="${b.id}">${b.bank_name} – ${b.account_name}</option>`).join('');
-    document.getElementById('tx-bank').innerHTML = `<option value="all">Please Select</option>${opts}`;
+    // placeholder — extend if other bank dropdowns are added
 }
 
 function bankEdit(id) {
@@ -1643,27 +1657,6 @@ async function loadCashflowStaff() {
         document.getElementById('cfs-wd-response').textContent = d.withdraw.totals.response;
         document.getElementById('cfs-wd-process').textContent  = d.withdraw.totals.process;
 
-        // Tips table
-        const tipsTbody = document.getElementById('cfs-tips-tbody');
-        tipsTbody.innerHTML = d.tips.rows.length ? d.tips.rows.map(r => `
-            <tr>
-                <td>${r.staff}</td>
-                <td>${r.total}</td>
-                <td>${parseFloat(r.amount).toFixed(2)}</td>
-            </tr>`).join('') : `<tr><td colspan="3" style="text-align:center;color:#999;">No data.</td></tr>`;
-        document.getElementById('cfs-tips-total').textContent  = d.tips.totals.total;
-        document.getElementById('cfs-tips-amount').textContent = d.tips.totals.amount;
-
-        // Rating table
-        const ratingTbody = document.getElementById('cfs-rating-tbody');
-        ratingTbody.innerHTML = d.rating.rows.length ? d.rating.rows.map(r => `
-            <tr>
-                <td>${r.staff}</td>
-                <td>${r.total_user}</td>
-                <td>${r.rating}</td>
-                <td>${r.tips}</td>
-                <td>${r.average_rating}</td>
-            </tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:#999;">No data.</td></tr>`;
     } catch(e) {
         alert('Error: ' + e.message);
     }
@@ -1860,6 +1853,98 @@ document.getElementById('pw-save').addEventListener('click', async () => {
     } catch(e) {
         document.getElementById('pw-error').textContent = e.message;
     }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CUSTOMERS PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+let boCustomersReady = false;
+
+async function initBoCustomers() {
+    if (!allCustomers.length) await loadCustomers();
+    renderBoCustomers();
+    boCustomersReady = true;
+}
+
+function renderBoCustomers() {
+    const q      = (document.getElementById('bc-search')?.value || '').toLowerCase();
+    const status = document.getElementById('bc-status')?.value || 'all';
+    let list = allCustomers;
+    if (q)              list = list.filter(c => c.name.toLowerCase().includes(q));
+    if (status !== 'all') list = list.filter(c => c.status === status);
+
+    const tbody = document.getElementById('bc-tbody');
+    if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:#999;padding:20px;">No customers found.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = list.map(c => {
+        const active = (c.status ?? '') === 'active';
+        const badge  = `<span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:bold;background:${active?'#e8f5e9':'#fce4ec'};color:${active?'#2e7d32':'#c62828'}">${(c.status ?? '').toUpperCase()}</span>`;
+        return `<tr>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${parseFloat(c.initial_balance ?? 0).toFixed(2)}</td>
+            <td style="text-align:center;">${badge}</td>
+            <td style="text-align:right;">
+                <button class="tbl-btn" onclick="boCustomerEdit(${JSON.stringify(c).replace(/"/g,'&quot;')})">EDIT</button>
+                <button class="tbl-btn" style="color:#c00;border-color:#c00;" onclick="boCustomerDelete(${c.id}, '${c.name.replace(/'/g,"\\'")}')">DELETE</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+async function boCustomerDelete(id, name) {
+    if (!confirm(`Delete customer "${name}"? This cannot be undone.`)) return;
+    try {
+        await api('DELETE', `customers/${id}`);
+        allCustomers = allCustomers.filter(c => c.id !== id);
+        refreshCustomerDropdown();
+        renderBoCustomers();
+    } catch(e) { alert('Error: ' + e.message); }
+}
+
+document.getElementById('bc-search').addEventListener('input', debounce(() => { if (boCustomersReady) renderBoCustomers(); }, 250));
+document.getElementById('bc-status').addEventListener('change', () => { if (boCustomersReady) renderBoCustomers(); });
+
+document.getElementById('bc-create-btn').addEventListener('click', () => {
+    document.getElementById('modal-customer-title').textContent = 'Create Customer';
+    document.getElementById('bc-id').value   = '';
+    document.getElementById('bc-name').value = '';
+    document.getElementById('bc-bal').value  = '0';
+    document.getElementById('bc-status-wrap').style.display = 'none';
+    document.getElementById('bc-save').textContent = 'Create';
+    openModal('modal-customer');
+});
+
+function boCustomerEdit(c) {
+    document.getElementById('modal-customer-title').textContent = 'Edit Customer';
+    document.getElementById('bc-id').value             = c.id;
+    document.getElementById('bc-name').value           = c.name;
+    document.getElementById('bc-bal').value            = c.initial_balance ?? 0;
+    document.getElementById('bc-status-field').value   = c.status ?? 'active';
+    document.getElementById('bc-status-wrap').style.display = '';
+    document.getElementById('bc-save').textContent = 'Save';
+    openModal('modal-customer');
+}
+
+document.getElementById('bc-save').addEventListener('click', async () => {
+    const id   = document.getElementById('bc-id').value;
+    const name = document.getElementById('bc-name').value.trim();
+    if (!name) { alert('Name is required'); return; }
+    const body = { name, initial_balance: document.getElementById('bc-bal').value };
+    if (id) body.status = document.getElementById('bc-status-field').value;
+    try {
+        if (id) {
+            await api('PUT', `customers/${id}`, body);
+        } else {
+            await api('POST', 'customers', body);
+        }
+        closeModal('modal-customer');
+        allCustomers = await api('GET', 'customers');
+        refreshCustomerDropdown();
+        renderBoCustomers();
+    } catch(e) { alert('Error: ' + e.message); }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -146,7 +146,7 @@ class AdministratorController extends Controller
         $value = $request->session()->get( 'mfa-ed' );
 
         if ( $value ) {
-            return redirect()->route( 'admin.dashboard' );
+            return redirect()->route( 'bo.index' );
         }
         
         $this->data['header']['title'] = __( 'template.verify_account' );

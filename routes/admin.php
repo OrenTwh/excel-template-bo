@@ -80,6 +80,7 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
             // ── Docs ─────────────────────────────────────────────────────────────
             Route::get( 'docs', function() { return view('docs.index'); } )->name( 'docs.index' );
             Route::get( 'docs-cn', function() { return view('docs_cn.index'); } )->name( 'docs_cn.index' );
+            Route::get( 'docs-qa', function() { return view('docs_qa.index'); } )->name( 'docs_qa.index' );
             // ────────────────────────────────────────────────────────────────────
 
             // ── FX Spreadsheet ───────────────────────────────────────────────────
@@ -95,7 +96,9 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
                 // Customers
                 Route::get(  'customers',                      [ FxController::class, 'customerList'           ] )->name( 'fx.customers' );
                 Route::post( 'customers',                      [ FxController::class, 'customerStore'          ] )->name( 'fx.customers.store' );
+                Route::put(    'customers/{id}',               [ FxController::class, 'customerUpdate'          ] )->name( 'fx.customers.update' );
                 Route::post( 'customers/{id}/toggle-today',    [ FxController::class, 'customerToggleCheckToday'] )->name( 'fx.customers.toggle' );
+                Route::delete( 'customers/{id}',               [ FxController::class, 'customerDelete'         ] )->name( 'fx.customers.delete' );
 
                 // Transactions
                 Route::post( 'transactions',                   [ FxController::class, 'transactionStore'       ] )->name( 'fx.transactions.store' );
@@ -142,7 +145,9 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
                 Route::post( 'customers',                  [ BoDashboardController::class, 'customerStore'        ] )->name( 'bo.customers.store' );
                 Route::post( 'customers/transactions',     [ BoDashboardController::class, 'customerTxStore'      ] )->name( 'bo.customer_tx.store' );
                 Route::put(  'customers/transactions/{id}',[ BoDashboardController::class, 'customerTxUpdate'     ] )->name( 'bo.customer_tx.update' );
-                Route::get(  'customers/{id}',             [ BoDashboardController::class, 'customer'             ] )->name( 'bo.customer' );
+                Route::get(    'customers/{id}',             [ BoDashboardController::class, 'customer'             ] )->name( 'bo.customer' );
+                Route::put(    'customers/{id}',             [ BoDashboardController::class, 'customerUpdate'        ] )->name( 'bo.customers.update' );
+                Route::delete( 'customers/{id}',             [ BoDashboardController::class, 'customerDelete'        ] )->name( 'bo.customers.delete' );
 
                 // Roles
                 Route::get(  'roles',                      [ BoDashboardController::class, 'roles'                ] )->name( 'bo.roles' );

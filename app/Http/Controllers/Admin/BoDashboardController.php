@@ -51,54 +51,23 @@ class BoDashboardController extends Controller
 
     public function transactions(Request $request)
     {
-        $query = BoTransaction::query();
+        $query = FxTransaction::with('customer');
 
-        if ($request->filled('transaction_id')) {
-            $query->where('transaction_id', 'like', '%' . $request->transaction_id . '%');
-        }
         if ($request->filled('customer')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('customer_id', 'like', '%' . $request->customer . '%')
-                  ->orWhere('customer_phone', 'like', '%' . $request->customer . '%');
-            });
+            $query->whereHas('customer', fn($q) => $q->where('name', 'like', '%' . $request->customer . '%'));
         }
-        if ($request->filled('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
+        if ($request->filled('currency')) {
+            $query->where('currency', $request->currency);
         }
         if ($request->filled('date_from')) {
-            $query->whereDate('transacted_at', '>=', $request->date_from);
+            $query->whereDate('date', '>=', $request->date_from);
         }
         if ($request->filled('date_to')) {
-            $query->whereDate('transacted_at', '<=', $request->date_to);
-        }
-        if ($request->filled('amount_min')) {
-            $query->where('amount', '>=', $request->amount_min);
-        }
-        if ($request->filled('amount_max')) {
-            $query->where('amount', '<=', $request->amount_max);
-        }
-        if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-        if ($request->filled('agent')) {
-            $query->where('agent_username', 'like', '%' . $request->agent . '%');
-        }
-        if ($request->filled('bo_bank_id') && $request->bo_bank_id !== 'all') {
-            $query->where('bo_bank_id', $request->bo_bank_id);
-        }
-        if ($request->filled('other_info')) {
-            $query->where('other_info', 'like', '%' . $request->other_info . '%');
+            $query->whereDate('date', '<=', $request->date_to);
         }
 
-        $orderMap = [
-            'pending_new' => ['transacted_at', 'desc'],
-            'pending_old' => ['transacted_at', 'asc'],
-        ];
-        [$col, $dir] = $orderMap[$request->status_order ?? 'pending_new'] ?? ['transacted_at', 'desc'];
-        $query->orderBy($col, $dir);
-
-        $records = $query->with('bank')->paginate(50);
-        $total   = $query->sum('amount');
+        $total   = (clone $query)->sum('myr_converted');
+        $records = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->paginate(50);
 
         return response()->json([
             'records' => $records->total(),
@@ -111,8 +80,55 @@ class BoDashboardController extends Controller
 
     public function transactionExport(Request $request)
     {
-        // placeholder — wire to a CSV/Excel export job as needed
-        return response()->json(['message' => 'Export queued.']);
+        $query = FxTransaction::with('customer');
+
+        if ($request->filled('customer')) {
+            $query->whereHas('customer', fn($q) => $q->where('name', 'like', '%' . $request->customer . '%'));
+        }
+        if ($request->filled('currency')) {
+            $query->where('currency', $request->currency);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        $records = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
+
+        $filename = 'fx_transactions_' . now()->format('Ymd_His') . '.csv';
+        $headers  = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control'       => 'no-cache, no-store, must-revalidate',
+        ];
+
+        $columns = ['Date', 'Customer', 'Currency', 'BUY IN', 'SELL OUT', 'Rate', 'MYR Conv.', 'MYR OUT', 'MYR IN', 'Remark', 'Cost Rate', 'Profit'];
+
+        $callback = function () use ($records, $columns) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $columns);
+            foreach ($records as $row) {
+                fputcsv($handle, [
+                    $row->date?->format('Y-m-d'),
+                    $row->customer?->name,
+                    $row->currency,
+                    $row->amount_in,
+                    $row->amount_out,
+                    $row->rate,
+                    $row->myr_converted,
+                    $row->myr_out,
+                    $row->myr_in,
+                    $row->remark,
+                    $row->cost_rate,
+                    $row->profit,
+                ]);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     // ─── Banks ───────────────────────────────────────────────────────────────────
@@ -471,18 +487,9 @@ class BoDashboardController extends Controller
             'process'        => $withdrawRows->count() ? round($withdrawRows->avg(fn($r) => (int)$r['process'])) . 's' : '0s',
         ];
 
-        // Tips & Rating — placeholder structure (no tips/rating columns in bo_transactions yet)
-        $tips = [
-            'rows'   => [],
-            'totals' => ['total' => 0, 'amount' => '0.00'],
-        ];
-        $rating = ['rows' => []];
-
         return response()->json([
             'deposit'  => ['rows' => $depositRows, 'totals' => $depositTotals],
             'withdraw' => ['rows' => $withdrawRows, 'totals' => $withdrawTotals],
-            'tips'     => $tips,
-            'rating'   => $rating,
         ]);
     }
 
@@ -528,7 +535,7 @@ class BoDashboardController extends Controller
     public function customers(Request $request)
     {
         return response()->json(
-            FxCustomer::orderBy('id')->get(['id', 'name', 'initial_balance', 'status', 'check_today'])
+            FxCustomer::where('status', 'active')->orderBy('id')->get(['id', 'name', 'initial_balance', 'status', 'check_today'])
         );
     }
 
@@ -571,6 +578,30 @@ class BoDashboardController extends Controller
                 'balance'       => number_format($balance, 2),
             ],
         ]);
+    }
+
+    public function customerUpdate(Request $request, int $id)
+    {
+        $request->validate([
+            'name'            => 'required|string|max:100|unique:fx_customers,name,'.$id,
+            'initial_balance' => 'nullable|numeric',
+            'status'          => 'nullable|in:active,inactive',
+        ]);
+
+        $customer = FxCustomer::findOrFail($id);
+        $customer->update([
+            'name'            => $request->name,
+            'initial_balance' => $request->initial_balance ?? $customer->initial_balance,
+            'status'          => $request->status          ?? $customer->status,
+        ]);
+
+        return response()->json(['success' => true, 'customer' => $customer->fresh()]);
+    }
+
+    public function customerDelete(int $id)
+    {
+        FxCustomer::findOrFail($id)->delete();
+        return response()->json(['success' => true]);
     }
 
     public function customerTxStore(Request $request)
