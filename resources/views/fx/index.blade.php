@@ -148,6 +148,8 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115
     <div class="sep"></div>
     <button id="tb-add-cust">+ Customer</button>
     <span id="tb-status">Ready</span>
+    <div class="sep"></div>
+    <a href="{{ route('bo.index') }}" style="background:#2e9e60;color:#fff;border:none;padding:0 10px;font-size:12px;cursor:pointer;height:24px;border-radius:2px;display:inline-flex;align-items:center;text-decoration:none;" title="Back Office">⬅ BO</a>
 </div>
 
 <!-- formula bar -->

@@ -359,6 +359,10 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
         <!-- id card icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="2"/><path d="M14 11h4M14 15h4M2 10h20"/></svg>
     </button>
+    <a class="nav-btn" href="{{ route('fx.index') }}" title="FX Spreadsheet" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
+        <!-- table/spreadsheet icon -->
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+    </a>
     <button class="nav-btn" data-page="menu"          title="Menu">
         <!-- hamburger icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="6"  x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
