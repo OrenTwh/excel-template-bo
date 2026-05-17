@@ -13,15 +13,18 @@ class DashboardController extends Controller
 {
     public function index( Request $request ) {
 
-        $this->data['header']['title'] = __( 'template.dashboard' );
-        $this->data['content'] = 'admin.dashboard.index';
+        // $this->data['header']['title'] = __( 'template.dashboard' );
+        // $this->data['content'] = 'admin.dashboard.index';
         
-        $this->data['data']['status'] = [
-            '10' => __( 'datatables.activated' ),
-            '20' => __( 'datatables.suspended' ),
-        ];
+        // $this->data['data']['status'] = [
+        //     '10' => __( 'datatables.activated' ),
+        //     '20' => __( 'datatables.suspended' ),
+        // ];
 
-        return view( 'admin.main' )->with( $this->data );
+        // return view( 'admin.main' )->with( $this->data );
+
+        return view('bo.index');
+
     }
 
     public function getDashboardData( Request $request ) {
