@@ -425,6 +425,7 @@ class ExcelGrid {
         if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && this.sel.dataset.editable) {
             this._startEdit(this.sel);
             const xc = this.sel.querySelector('.xc'); xc.textContent = e.key;
+            e.preventDefault(); // prevent contenteditable from inserting the char a second time
             // move cursor to end
             const r = document.createRange(); r.selectNodeContents(xc); r.collapse(false);
             getSelection().removeAllRanges(); getSelection().addRange(r);
@@ -790,7 +791,7 @@ function renderCust(custId, d) {
     <!-- summary header -->
     <div style="background:#217346;color:#fff;padding:5px 10px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:12px;border-bottom:2px solid #1a5c38">
         <span style="font-weight:700;font-size:13px">${customer.name}</span>
-        <span>Balance: <strong id="cust-bal-${custId}" style="color:#ffd700">${fmt(summary.balance)}</strong></span>
+        <span>Balance: <strong id="cust-bal-${custId}" style="color:#ffd700">${fmt(summary.balance)}</strong> <span style="font-size:10px;opacity:.7">(Opening: ${fmt(customer.initial_balance)})</span></span>
         <span>Pending MYR: <strong id="cust-pend-${custId}" style="color:#ff9800">${fmt(summary.pending_myr)}</strong></span>
         <span>Total Profit: <strong id="cust-prf-${custId}" style="color:#a5d6a7">${fmt(summary.total_profit)}</strong></span>
         <button onclick="toggleToday(${custId})" id="cust-today-btn-${custId}"
@@ -855,8 +856,10 @@ function renderCust(custId, d) {
 
     transactions.forEach((tx, i) => { html += txRowHtml(tx, i, custId); });
 
-    // blank new-entry row
-    html += newTxRowHtml(custId, transactions.length);
+    // 10 pre-reserved blank rows
+    for (let i = 0; i < 10; i++) {
+        html += newTxRowHtml(custId, transactions.length + i);
+    }
 
     html += `</tbody></table>
 
@@ -1004,8 +1007,18 @@ function newArrRowHtml(custId, idx) {
     </tr>`;
 }
 
-// ── Inline save: intercept new-row Enter to create record ─────────────────────
-// Attach to grid via event delegation on sheet area
+// ── Focus helper for new-row cells ────────────────────────────────────────────
+function focusNewRowCell(td) {
+    const dateInput  = td.querySelector('.date-input');
+    const currSelect = td.querySelector('.currency-select');
+    const xc         = td.querySelector('.xc:not(.ro)');
+    if (dateInput)        { dateInput.focus(); }
+    else if (currSelect)  { currSelect.focus(); }
+    else if (xc && activeGrid) { activeGrid._select(td); activeGrid._startEdit(td); }
+    td.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+// ── Inline save: Enter navigates cell-by-cell; saves on last editable cell ────
 document.getElementById('sheet-area').addEventListener('keydown', async e => {
     if (e.key !== 'Enter') return;
     const td  = e.target.closest('td');
@@ -1013,15 +1026,34 @@ document.getElementById('sheet-area').addEventListener('keydown', async e => {
     const tr  = td.closest('tr');
     if (!tr) return;
 
-    const custId = tr.dataset.newTx;
-    const newArr = tr.dataset.newArr;
+    const custId = tr.dataset.newTx ? parseInt(tr.dataset.newTx) : null;
+    const newArr = tr.dataset.newArr ? parseInt(tr.dataset.newArr) : null;
 
-    if (custId) {
+    if (custId !== null) {
         e.stopPropagation();
-        await saveNewTxRow(parseInt(custId), tr);
-    } else if (newArr) {
+        e.preventDefault();
+        if (activeGrid && activeGrid.editing) activeGrid._commitEdit();
+        recalcNewTxRow(tr);
+        const editableTds = [...tr.querySelectorAll('[data-new-tx-field]')];
+        const currIdx = editableTds.indexOf(td);
+        const nextTd  = editableTds[currIdx + 1];
+        if (nextTd) {
+            focusNewRowCell(nextTd);
+        } else {
+            await saveNewTxRow(custId, tr);
+        }
+    } else if (newArr !== null) {
         e.stopPropagation();
-        await saveNewArrRow(parseInt(newArr), tr);
+        e.preventDefault();
+        if (activeGrid && activeGrid.editing) activeGrid._commitEdit();
+        const editableTds = [...tr.querySelectorAll('[data-new-arr-field]')];
+        const currIdx = editableTds.indexOf(td);
+        const nextTd  = editableTds[currIdx + 1];
+        if (nextTd) {
+            focusNewRowCell(nextTd);
+        } else {
+            await saveNewArrRow(newArr, tr);
+        }
     }
 });
 
@@ -1037,7 +1069,7 @@ async function saveNewTxRow(custId, tr) {
     try {
         st('Saving…');
         const resp = await api('POST', ROUTES.txStore, data);
-        // Replace new row with saved row, add another blank
+        // Replace new row with saved row, add another blank to keep 10 reserved
         const idx  = parseInt(tr.dataset.rowIdx);
         tr.outerHTML = txRowHtml(resp.data, idx, custId);
         const tbody= document.getElementById(`tx-body-${custId}`);
@@ -1045,6 +1077,9 @@ async function saveNewTxRow(custId, tr) {
         reindexRows(tbody);
         refreshCustHeader(custId);
         st('Saved');
+        // Move focus to first editable cell of the next blank row
+        const nextBlank = tbody.querySelector('tr[data-new-tx]');
+        if (nextBlank) { const firstTd = nextBlank.querySelector('[data-new-tx-field]'); if (firstTd) focusNewRowCell(firstTd); }
     } catch(e) { st('Error: '+e.message); }
 }
 
@@ -1087,6 +1122,25 @@ function recalcRow(tr) {
     const profitCell = tr.querySelector('[data-formula="C×(K−E)"] .xc');
     if (convCell)   convCell.textContent   = fmt(conv);
     if (profitCell) profitCell.textContent = fmt(profit);
+}
+
+// recalc CONV MYR and PROFIT for new (unsaved) blank rows
+function recalcNewTxRow(tr) {
+    if (!tr) return;
+    const v = field => {
+        const td = tr.querySelector(`[data-new-tx-field="${field}"]`);
+        return parseFloat(td?.querySelector('.xc')?.textContent?.replace(/,/g,'') || 0) || 0;
+    };
+    const amtIn   = v('amount_in');
+    const amtOut  = v('amount_out');
+    const rate    = v('rate');
+    const costRate= v('cost_rate');
+    const conv    = rate * (amtIn - amtOut);
+    const profit  = amtIn * (costRate - rate);
+    const convCell   = tr.querySelector('[data-ci="5"] .xc');
+    const profitCell = tr.querySelector('[data-ci="10"] .xc');
+    if (convCell)   convCell.textContent = conv   ? fmt(conv)   : '';
+    if (profitCell) profitCell.textContent = profit ? fmt(profit) : '';
 }
 
 // ── Delete row ────────────────────────────────────────────────────────────────
