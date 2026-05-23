@@ -11,11 +11,11 @@ html,body{height:100%;font-family:'Segoe UI',Arial,sans-serif;font-size:12px;bac
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 #app{display:flex;flex-direction:column;height:100vh}
-#toolbar{background:#217346;color:#fff;padding:0 10px;display:flex;align-items:center;gap:8px;flex-shrink:0;height:38px}
+#toolbar{background:#283593;color:#fff;padding:0 10px;display:flex;align-items:center;gap:8px;flex-shrink:0;height:38px}
 #toolbar .tb-title{font-weight:700;font-size:13px;margin-right:6px}
-#toolbar select,#toolbar input[type=number]{background:#1a5c38;color:#fff;border:1px solid #2e9e60;padding:1px 5px;font-size:12px;height:24px;border-radius:2px;outline:none}
-#toolbar button{background:#2e9e60;color:#fff;border:none;padding:0 10px;font-size:12px;cursor:pointer;height:24px;border-radius:2px}
-#toolbar button:hover{background:#25834f}
+#toolbar select,#toolbar input[type=number]{background:#1a237e;color:#fff;border:1px solid #3949ab;padding:1px 5px;font-size:12px;height:24px;border-radius:2px;outline:none}
+#toolbar button{background:#3949ab;color:#fff;border:none;padding:0 10px;font-size:12px;cursor:pointer;height:24px;border-radius:2px}
+#toolbar button:hover{background:#303f9f}
 #toolbar .sep{width:1px;height:18px;background:rgba(255,255,255,.25);margin:0 2px}
 #tb-status{font-size:11px;opacity:.7;margin-left:auto}
 
@@ -31,7 +31,7 @@ html,body{height:100%;font-family:'Segoe UI',Arial,sans-serif;font-size:12px;bac
 .sv.active{display:block}
 
 /* ── Tab bar ─────────────────────────────────────────────────────────────── */
-#tab-bar{background:#d4d4d4;border-top:2px solid #217346;display:flex;align-items:flex-end;padding:0 4px;flex-shrink:0;height:26px;overflow-x:auto;gap:1px}
+#tab-bar{background:#d4d4d4;border-top:2px solid #283593;display:flex;align-items:flex-end;padding:0 4px;flex-shrink:0;height:26px;overflow-x:auto;gap:1px}
 .tab{padding:3px 14px;background:#bbb;border:1px solid #999;border-bottom:none;cursor:pointer;font-size:11px;border-radius:3px 3px 0 0;white-space:nowrap;color:#444;display:flex;align-items:center;gap:5px}
 .tab:hover{background:#ccc}
 .tab.active{background:#fff;color:#000;font-weight:600;border-color:#aaa}
@@ -64,17 +64,18 @@ td.xl-editing{outline:2px solid #1155cc;outline-offset:-1px;z-index:11}
 td.xl-editing .xc{background:#fff;white-space:pre}
 
 /* cell colours */
-.bg-green {background:#1a9850!important;color:#fff!important;font-weight:600;text-align:center}
-.bg-dgreen{background:#145a32!important;color:#fff!important;font-weight:600;text-align:center}
-.bg-blue  {background:#1565c0!important;color:#fff!important;font-weight:600;text-align:center}
-.bg-teal  {background:#00796b!important;color:#fff!important;font-weight:600;text-align:center}
-.bg-dark  {background:#37474f!important;color:#fff!important;font-weight:600;text-align:center}
-.bg-gray  {background:#78909c!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-green {background:#283593!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-dgreen{background:#1a237e!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-blue  {background:#283593!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-teal  {background:#00acc1!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-dark  {background:#283593!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-gray  {background:#546e7a!important;color:#fff!important;font-weight:600;text-align:center}
+.bg-green .xc,.bg-dgreen .xc,.bg-blue .xc,.bg-teal .xc,.bg-dark .xc,.bg-gray .xc{color:#fff!important}
 .bg-yellow{background:#fffde7}
-.bg-lgreen{background:#e8f5e9}
+.bg-lgreen{background:#e0f7fa}
 .bg-lblue {background:#e3f2fd}
-.bg-total {background:#fef9c3;font-weight:600}
-.bg-calc  {background:#f0fdf4}  /* calculated cells - light mint */
+.bg-total {background:#f0f0f0;font-weight:600}
+.bg-calc  {background:#e8eaf6}  /* calculated cells - light indigo */
 .num{text-align:right}
 .ctr{text-align:center}
 .bold{font-weight:600}
@@ -95,7 +96,7 @@ td .currency-select{width:100%;height:100%;border:none;outline:none;background:t
 /* ── Column resize handle ────────────────────────────────────────────────── */
 th.resizable{position:relative}
 th.resizable .col-rz{position:absolute;right:0;top:0;width:5px;height:100%;cursor:col-resize;z-index:6;user-select:none}
-th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115,70,.55)}
+th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(40,53,147,.55)}
 
 /* ── Context menu ────────────────────────────────────────────────────────── */
 #ctx{display:none;position:fixed;background:#fff;border:1px solid #bbb;box-shadow:3px 3px 8px rgba(0,0,0,.2);z-index:9999;min-width:160px;border-radius:2px}
@@ -108,22 +109,22 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:8000;align-items:center;justify-content:center}
 .mo.open{display:flex}
 .mb{background:#fff;width:440px;max-width:96vw;border-radius:2px;box-shadow:0 8px 32px rgba(0,0,0,.3)}
-.mh{background:#217346;color:#fff;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:12px}
+.mh{background:#283593;color:#fff;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:12px}
 .mc-btn{background:none;border:none;color:#fff;font-size:17px;cursor:pointer;line-height:1}
 .mbody{padding:12px}
 .mf{margin-bottom:8px}
 .mf label{display:block;font-size:11px;color:#555;margin-bottom:2px}
 .mf input,.mf select{width:100%;border:1px solid #ccc;padding:3px 6px;font-size:12px;height:27px;outline:none}
-.mf input:focus,.mf select:focus{border-color:#217346}
+.mf input:focus,.mf select:focus{border-color:#283593}
 .mfoot{padding:8px 12px;border-top:1px solid #eee;display:flex;gap:6px;justify-content:flex-end}
-.btn-save  {background:#217346;color:#fff;border:none;padding:4px 16px;font-size:12px;cursor:pointer;border-radius:2px}
+.btn-save  {background:#283593;color:#fff;border:none;padding:4px 16px;font-size:12px;cursor:pointer;border-radius:2px}
 .btn-cancel{background:#e0e0e0;border:none;padding:4px 12px;font-size:12px;cursor:pointer;border-radius:2px}
 .btn-del   {background:#c00;color:#fff;border:none;padding:4px 12px;font-size:12px;cursor:pointer;border-radius:2px;margin-right:auto}
 
 /* ── Loading ─────────────────────────────────────────────────────────────── */
 .ldo{display:none;position:absolute;inset:0;background:rgba(255,255,255,.65);z-index:100;align-items:center;justify-content:center}
 .ldo.show{display:flex}
-.spin{width:28px;height:28px;border:3px solid #ccc;border-top-color:#217346;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px}
+.spin{width:28px;height:28px;border:3px solid #ccc;border-top-color:#283593;border-radius:50%;animation:sp .7s linear infinite;margin-right:8px}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 @media print{#toolbar,#tab-bar,#ctx,#fbar{display:none}.sv{display:block!important;position:static;overflow:visible}#app{height:auto}}
@@ -149,7 +150,7 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115
     <button id="tb-add-cust">+ Customer</button>
     <span id="tb-status">Ready</span>
     <div class="sep"></div>
-    <a href="{{ route('bo.index') }}" style="background:#2e9e60;color:#fff;border:none;padding:0 10px;font-size:12px;cursor:pointer;height:24px;border-radius:2px;display:inline-flex;align-items:center;text-decoration:none;" title="Back Office">⬅ BO</a>
+    <a href="{{ route('bo.index') }}" style="background:#3949ab;color:#fff;border:none;padding:0 10px;font-size:12px;cursor:pointer;height:24px;border-radius:2px;display:inline-flex;align-items:center;text-decoration:none;" title="Back Office">⬅ BO</a>
 </div>
 
 <!-- formula bar -->
@@ -227,6 +228,17 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(33,115
             <button class="btn-cancel" data-close="mo-cust-edit">Cancel</button>
             <button class="btn-save" id="me-save">Save</button>
         </div>
+    </div>
+</div>
+
+<!-- add rows below modal -->
+<div class="mo" id="mo-add-rows">
+    <div class="mb" style="width:260px">
+        <div class="mh"><span>Add Rows Below</span><button class="mc-btn" data-close="mo-add-rows">&times;</button></div>
+        <div class="mbody">
+            <div class="mf"><label>Number of rows</label><input id="ar-count" type="number" value="1" min="1" max="50"></div>
+        </div>
+        <div class="mfoot"><button class="btn-cancel" data-close="mo-add-rows">Cancel</button><button class="btn-save" id="ar-confirm">Add</button></div>
     </div>
 </div>
 
@@ -578,20 +590,20 @@ function renderMaster(d) {
         <tr>
             <th class="rh">2</th>
             <td class="bg-green bold ctr" colspan="${2+colKeys.length+4}" data-r="2" data-ci="1">
-                <span class="xc ro">NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)}</span>
+                <span class="xc ro" id="master-hdr-summary">NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)}</span>
             </td>
         </tr>
         <tr>
             <th class="rh">3</th>
             <td class="bg-total bold ctr" data-r="3" data-ci="1"><span class="xc ro">TOTAL</span></td>
             ${colKeys.map((k,i) => {
-                const tot = (d.currency_totals||[]).find(r=>r.currency===colLabels[i]);
-                return `<td class="bg-total num" data-r="3" data-ci="${2+i}"><span class="xc ro">${tot?fmt(tot.total_in):''}</span></td>`;
+                const total = Object.values(d.manual_daily||{}).reduce((s,row)=>s+(parseFloat(row[k])||0),0);
+                return `<td class="bg-total num" id="master-cur-total-${k}" data-r="3" data-ci="${2+i}"><span class="xc ro">${total?fmt(total):''}</span></td>`;
             }).join('')}
-            <td class="bg-total num" data-r="3" data-ci="${2+colKeys.length}"><span class="xc ro">${fmt(d.daily_rows?.reduce((s,r)=>s+r.myr_balance,0)||0)}</span></td>
-            <td class="bg-total num" data-r="3" data-ci="${3+colKeys.length}"><span class="xc ro">${fmt(d.daily_rows?.reduce((s,r)=>s+r.profit,0)||0)}</span></td>
+            <td class="bg-total num" id="master-total-bal"    data-r="3" data-ci="${2+colKeys.length}"><span class="xc ro">${fmt(Object.values(d.manual_daily||{}).reduce((s,r)=>s+(parseFloat(r['balance_myr'])||0),0))}</span></td>
+            <td class="bg-total num" id="master-total-profit" data-r="3" data-ci="${3+colKeys.length}"><span class="xc ro">${fmt(d.daily_rows?.reduce((s,r)=>s+r.profit,0)||0)}</span></td>
             <td class="bg-total" data-r="3" data-ci="${4+colKeys.length}"><span class="xc ro"></span></td>
-            <td class="bg-total num" data-r="3" data-ci="${5+colKeys.length}"><span class="xc ro">${fmt(d.need_pay)}</span></td>
+            <td class="bg-total num" id="master-total-needpay" data-r="3" data-ci="${5+colKeys.length}"><span class="xc ro">${fmt(Object.values(d.manual_daily||{}).reduce((s,r)=>s+(parseFloat(r['need_pay'])||0),0))}</span></td>
         </tr>
     </thead>
     <tbody>`;
@@ -612,8 +624,11 @@ function renderMaster(d) {
                     <span class="xc">${val || ''}</span>
                 </td>`;
             }).join('')}
-            <td class="bg-calc num" data-r="${r}" data-ci="${2+colKeys.length}" data-formula="Σ MYR">
-                <span class="xc ro">${row.myr_balance ? fmt(row.myr_balance) : ''}</span>
+            <td class="bg-lblue num" data-r="${r}" data-ci="${2+colKeys.length}"
+                data-editable="1" data-save-path="${ROUTES.masterDaily}" data-save-method="PATCH"
+                data-save-field="balance_myr" data-extra='{"year":${year},"month":${month},"day":${idx+1}}'
+                data-val="${mday['balance_myr']??''}">
+                <span class="xc">${mday['balance_myr'] ? fmt(mday['balance_myr']) : ''}</span>
             </td>
             <td class="num" data-r="${r}" data-ci="${3+colKeys.length}" data-formula="ΔDay" style="${profit<0?'color:#c00':''}">
                 <span class="xc ro">${profit ? fmt(profit) : ''}</span>
@@ -621,8 +636,11 @@ function renderMaster(d) {
             <td class="num" data-r="${r}" data-ci="${4+colKeys.length}" data-formula="Profit/Vol">
                 <span class="xc ro">${row.profit_rate ? (row.profit_rate*100).toFixed(2)+'%' : ''}</span>
             </td>
-            <td class="num" data-r="${r}" data-ci="${5+colKeys.length}">
-                <span class="xc ro"></span>
+            <td class="bg-lblue num" data-r="${r}" data-ci="${5+colKeys.length}"
+                data-editable="1" data-save-path="${ROUTES.masterDaily}" data-save-method="PATCH"
+                data-save-field="need_pay" data-extra='{"year":${year},"month":${month},"day":${idx+1}}'
+                data-val="${mday['need_pay']??''}">
+                <span class="xc">${mday['need_pay'] ? fmt(mday['need_pay']) : ''}</span>
             </td>
         </tr>`;
     });
@@ -705,11 +723,16 @@ ExcelGrid.prototype._save = async function(td, xc, value) {
         try {
             await api('PATCH', savePath, { ...td._saveExtra, col: saveField, value });
             td.dataset.val = value;
+            refreshMasterLeft();
         } catch(e) { xc.textContent = this.origVal; td.classList.add('save-err'); st('Save error: '+e.message); }
         td.classList.remove('saving');
         return;
     }
-    return _origSave.call(this, td, xc, value);
+    await _origSave.call(this, td, xc, value);
+    // If a customer transaction cell was saved successfully, refresh master left panel
+    if (td.dataset.custId && !td.classList.contains('save-err')) {
+        refreshMasterLeft();
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -789,22 +812,22 @@ function renderCust(custId, d) {
 
     let html = `
     <!-- summary header -->
-    <div style="background:#217346;color:#fff;padding:5px 10px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:12px;border-bottom:2px solid #1a5c38">
+    <div style="background:#283593;color:#fff;padding:5px 10px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:12px;border-bottom:2px solid #1a237e">
         <span style="font-weight:700;font-size:13px">${customer.name}</span>
         <span>Balance: <strong id="cust-bal-${custId}" style="color:#ffd700">${fmt(summary.balance)}</strong> <span style="font-size:10px;opacity:.7">(Opening: ${fmt(customer.initial_balance)})</span></span>
         <span>Pending MYR: <strong id="cust-pend-${custId}" style="color:#ff9800">${fmt(summary.pending_myr)}</strong></span>
         <span>Total Profit: <strong id="cust-prf-${custId}" style="color:#a5d6a7">${fmt(summary.total_profit)}</strong></span>
         <button onclick="toggleToday(${custId})" id="cust-today-btn-${custId}"
-            style="background:${summary.check_today?'#e67e22':'#1a5c38'};border:1px solid rgba(255,255,255,.3);color:#fff;padding:2px 10px;cursor:pointer;font-size:11px;border-radius:2px">
+            style="background:${summary.check_today?'#e67e22':'#1a237e'};border:1px solid rgba(255,255,255,.3);color:#fff;padding:2px 10px;cursor:pointer;font-size:11px;border-radius:2px">
             ${summary.check_today ? 'TODAY ONLY' : 'ALL TIME'}
         </button>
         <button onclick="openCustEdit(${custId})"
-            style="background:#1a5c38;border:1px solid rgba(255,255,255,.3);color:#fff;padding:2px 10px;cursor:pointer;font-size:11px;border-radius:2px;margin-left:auto">
+            style="background:#1a237e;border:1px solid rgba(255,255,255,.3);color:#fff;padding:2px 10px;cursor:pointer;font-size:11px;border-radius:2px;margin-left:auto">
             ✏ Edit
         </button>
     </div>
     <!-- totals strip -->
-    <div id="cust-totals-${custId}" style="background:#e8f5e9;padding:3px 10px;font-size:11px;border-bottom:1px solid #c8e6c9;display:flex;gap:16px">
+    <div id="cust-totals-${custId}" style="background:#e0f7fa;padding:3px 10px;font-size:11px;border-bottom:1px solid #b2ebf2;display:flex;gap:16px">
         <span>BUY IN: <strong>${fmt(summary.totals.amount_in)}</strong></span>
         <span>SELL OUT: <strong>${fmt(summary.totals.amount_out)}</strong></span>
         <span>CONV MYR: <strong>${fmt(summary.totals.myr_converted)}</strong></span>
@@ -864,7 +887,7 @@ function renderCust(custId, d) {
     html += `</tbody></table>
 
     <!-- arrangement table -->
-    <div style="background:#37474f;color:#fff;padding:4px 10px;font-weight:600;font-size:11px;display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+    <div style="background:#283593;color:#fff;padding:4px 10px;font-weight:600;font-size:11px;display:flex;justify-content:space-between;align-items:center;margin-top:6px">
         <span>ARRANGEMENTS — Pending: <span id="cust-pend2-${custId}">${fmt(summary.pending_myr)}</span></span>
     </div>
     <table class="xl" style="width:100%">
@@ -904,21 +927,31 @@ function txRowHtml(tx, idx, custId) {
     // fields that affect formula columns → trigger recalcRow on save
     const recalcFields = new Set(['amount_in','amount_out','rate','cost_rate']);
 
+    const numericFields = new Set(['amount_in','amount_out','rate','myr_out','myr_in','cost_rate']);
     const cell = (ci, field, val, cls='', readOnly=false) => {
         const ro       = readOnly ? 'ro' : '';
         const edit     = readOnly ? '' : 'data-editable="1"';
         const savePath = readOnly ? '' : `data-save-path="${route('txUpdate', txId)}" data-save-method="PUT" data-save-field="${field}"`;
         const formula  = readOnly && field ? `data-formula="${field}"` : '';
         const recalc   = (!readOnly && recalcFields.has(field)) ? 'data-recalc-row="1"' : '';
-        return `<td class="${cls}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" ${edit} ${savePath} ${formula} ${recalc}>
+        const numeric  = (!readOnly && numericFields.has(field)) ? ' data-numeric="1"' : '';
+        return `<td class="${cls}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" ${edit} ${savePath} ${formula} ${recalc}${numeric}>
             <span class="xc ${ro}">${val}</span>
         </td>`;
     };
 
+    const currencies = ['AUD','PGK','MYR','SGD','USDT','ABA USD','THB','VND'];
     return `<tr data-tx-id="${txId}" data-cust-id="${custId}" data-row-idx="${idx}" data-r="${r}">
         <th class="rh">${r}</th>
-        ${cell(0, 'date',       tx.date||'',                       'bg-yellow ctr', false)}
-        ${cell(1, 'currency',   tx.currency||'',                   'ctr bold',      false)}
+        <td class="bg-yellow ctr" data-r="${r}" data-ci="0" data-cust-id="${custId}">
+            <input type="date" class="date-input" value="${(tx.date||'').substring(0,10)}">
+        </td>
+        <td class="ctr bold" data-r="${r}" data-ci="1" data-cust-id="${custId}">
+            <select class="currency-select">
+                <option value="">—</option>
+                ${currencies.map(c=>`<option value="${c}"${tx.currency===c?' selected':''}>${c}</option>`).join('')}
+            </select>
+        </td>
         ${cell(2, 'amount_in',  fmt(tx.amount_in,4),               'bg-lblue num',  false)}
         ${cell(3, 'amount_out', fmt(tx.amount_out,4),              'num',           false)}
         ${cell(4, 'rate',       fmtR(tx.rate,6),                   'num',           false)}
@@ -928,8 +961,9 @@ function txRowHtml(tx, idx, custId) {
         ${cell(8, 'remark',     tx.remark||'',                     '',              false)}
         ${cell(9, 'cost_rate',  fmtR(tx.cost_rate,6),              'num',           false)}
         ${cell(10,'C×(K−E)',    fmt(profit),                       `bg-calc num ${profit<0?'':''}`, true)}
-        <td class="ctr" data-r="${r}" data-ci="11">
+        <td class="ctr" data-r="${r}" data-ci="11" style="white-space:nowrap">
             <span class="xc ro" style="font-size:10px;color:#1155cc;cursor:pointer" onclick="deleteTxRow(${txId},${custId},this.closest('tr'))">✕</span>
+            <span class="xc ro" style="font-size:13px;color:#00acc1;cursor:pointer;margin-left:5px;font-weight:700" title="Add rows below" onclick="openAddRowsPopup(${custId},this.closest('tr'))"></span>
         </td>
     </tr>`;
 }
@@ -939,6 +973,7 @@ function newTxRowHtml(custId, idx) {
     const fields = ['date','currency','amount_in','amount_out','rate','','myr_out','myr_in','remark','cost_rate','',''];
     const cls    = ['bg-yellow ctr','ctr bold','bg-lblue num','num','num','bg-calc num','num','bg-lgreen num','','num','bg-calc num',''];
     const ro     = [0,0,0,0,0,1,0,0,0,0,1,1];
+    const newNumeric = new Set(['amount_in','amount_out','rate','myr_out','myr_in','cost_rate']);
     return `<tr data-new-tx="${custId}" data-cust-id="${custId}" data-row-idx="${idx}" data-r="${r}">
         <th class="rh dim">*</th>
         ${fields.map((f,ci) => {
@@ -962,7 +997,13 @@ function newTxRowHtml(custId, idx) {
                     </select>
                 </td>`;
             }
-            return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" ${ro[ci]?'':' data-editable="1" data-new-tx-field="'+f+'"'}>
+            if (ci === 11) {
+                return `<td class="ctr" data-r="${r}" data-ci="11" data-cust-id="${custId}" style="white-space:nowrap">
+                    <span class="xc ro" style="font-size:13px;color:#00acc1;cursor:pointer;font-weight:700" title="Add rows below" onclick="openAddRowsPopup(${custId},this.closest('tr'))">⊕</span>
+                </td>`;
+            }
+            const numeric = newNumeric.has(f) ? ' data-numeric="1"' : '';
+            return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}"${numeric}${ro[ci]?'':' data-editable="1" data-new-tx-field="'+f+'"'}>
                 <span class="xc ${ro[ci]?'ro dim':''}" ${!ro[ci]?'data-placeholder="'+f+'"':''}></span>
             </td>`;
         }).join('')}
@@ -1034,26 +1075,50 @@ document.getElementById('sheet-area').addEventListener('keydown', async e => {
         e.preventDefault();
         if (activeGrid && activeGrid.editing) activeGrid._commitEdit();
         recalcNewTxRow(tr);
-        const editableTds = [...tr.querySelectorAll('[data-new-tx-field]')];
-        const currIdx = editableTds.indexOf(td);
-        const nextTd  = editableTds[currIdx + 1];
-        if (nextTd) {
-            focusNewRowCell(nextTd);
-        } else {
-            await saveNewTxRow(custId, tr);
-        }
+        await saveNewTxRow(custId, tr);
     } else if (newArr !== null) {
         e.stopPropagation();
         e.preventDefault();
         if (activeGrid && activeGrid.editing) activeGrid._commitEdit();
-        const editableTds = [...tr.querySelectorAll('[data-new-arr-field]')];
-        const currIdx = editableTds.indexOf(td);
-        const nextTd  = editableTds[currIdx + 1];
-        if (nextTd) {
-            focusNewRowCell(nextTd);
-        } else {
-            await saveNewArrRow(newArr, tr);
-        }
+        await saveNewArrRow(newArr, tr);
+    }
+});
+
+// Save date / currency changes on existing transaction rows
+document.getElementById('sheet-area').addEventListener('change', async e => {
+    const tr = e.target.closest('tr[data-tx-id]');
+    if (!tr) return;
+    const txId   = parseInt(tr.dataset.txId);
+    const custId = parseInt(tr.dataset.custId);
+    let field, value;
+    if (e.target.classList.contains('date-input'))       { field = 'date';     value = e.target.value; }
+    else if (e.target.classList.contains('currency-select')) { field = 'currency'; value = e.target.value; }
+    else return;
+    if (!value) return;
+    try {
+        st('Saving…');
+        await api('PUT', route('txUpdate', txId), { [field]: value });
+        refreshCustHeader(custId);
+        refreshMasterLeft();
+        st('Saved');
+    } catch(err) { st('Save error: ' + err.message); }
+});
+
+// Strip non-numeric characters from numeric cells as user types
+document.getElementById('sheet-area').addEventListener('input', e => {
+    const xc = e.target.closest('.xc');
+    if (!xc || xc.contentEditable !== 'true') return;
+    const td = xc.closest('td[data-numeric]');
+    if (!td) return;
+    const val     = xc.textContent;
+    const cleaned = val.replace(/[^0-9.]/g, '');
+    if (val !== cleaned) {
+        xc.textContent = cleaned;
+        const range = document.createRange();
+        range.selectNodeContents(xc);
+        range.collapse(false);
+        getSelection().removeAllRanges();
+        getSelection().addRange(range);
     }
 });
 
@@ -1076,6 +1141,7 @@ async function saveNewTxRow(custId, tr) {
         tbody.insertAdjacentHTML('beforeend', newTxRowHtml(custId, idx+1));
         reindexRows(tbody);
         refreshCustHeader(custId);
+        refreshMasterLeft();
         st('Saved');
         // Move focus to first editable cell of the next blank row
         const nextBlank = tbody.querySelector('tr[data-new-tx]');
@@ -1151,8 +1217,42 @@ async function deleteTxRow(txId, custId, tr) {
         tr.remove();
         reindexRows(document.getElementById(`tx-body-${custId}`));
         refreshCustHeader(custId);
+        refreshMasterLeft();
     } catch(e) { alert(e.message); }
 }
+
+// ── Add X rows below via popup ────────────────────────────────────────────────
+let _addRowsTarget = null;
+
+function openAddRowsPopup(custId, tr) {
+    _addRowsTarget = { custId, tr };
+    document.getElementById('ar-count').value = '1';
+    openMo('mo-add-rows');
+}
+
+document.getElementById('ar-confirm').addEventListener('click', () => {
+    if (!_addRowsTarget) return;
+    const count  = Math.max(1, Math.min(50, parseInt(document.getElementById('ar-count').value) || 1));
+    const { custId, tr } = _addRowsTarget;
+    const tbody  = document.getElementById(`tx-body-${custId}`);
+    if (!tbody) { closeMo('mo-add-rows'); return; }
+    let ref = tr;
+    for (let i = 0; i < count; i++) {
+        const rows   = [...tbody.querySelectorAll('tr[data-tx-id], tr[data-new-tx]')];
+        const idx    = rows.length > 0 ? rows.length - 1 : 0;
+        const html   = newTxRowHtml(custId, idx);
+        if (ref && ref.parentNode === tbody) {
+            ref.insertAdjacentHTML('afterend', html);
+            ref = ref.nextElementSibling;
+        } else {
+            tbody.insertAdjacentHTML('beforeend', html);
+            ref = tbody.lastElementChild;
+        }
+    }
+    reindexRows(tbody);
+    closeMo('mo-add-rows');
+    _addRowsTarget = null;
+});
 
 // ── Insert blank row via context menu ────────────────────────────────────────
 function addNewTxRow(custId, refTr, above = false) {
@@ -1192,12 +1292,46 @@ async function refreshCustHeader(custId) {
     } catch(e) {}
 }
 
+// ── Refresh master left panel calculated columns after any transaction change ──
+async function refreshMasterLeft() {
+    if (!loaded.has('master')) return;
+    const table = document.getElementById('xl-master-left');
+    if (!table) return;
+    try {
+        const d = await api('GET', ROUTES.master, getYM());
+        (d.daily_rows || []).forEach((row, idx) => {
+            const r      = 4 + idx;
+            const prTd   = table.querySelector(`td[data-r="${r}"][data-formula="ΔDay"]`);
+            const rateTd = table.querySelector(`td[data-r="${r}"][data-formula="Profit/Vol"]`);
+            if (prTd) {
+                prTd.querySelector('.xc').textContent = row.profit ? fmt(row.profit) : '';
+                prTd.style.color = row.profit < 0 ? '#c00' : '';
+            }
+            if (rateTd) rateTd.querySelector('.xc').textContent = row.profit_rate ? (row.profit_rate * 100).toFixed(2) + '%' : '';
+        });
+        const hdr = document.getElementById('master-hdr-summary');
+        if (hdr) hdr.innerHTML = `NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)}`;
+        const totBal = document.getElementById('master-total-bal');
+        if (totBal) totBal.querySelector('.xc').textContent = fmt(Object.values(d.manual_daily||{}).reduce((s,r)=>s+(parseFloat(r['balance_myr'])||0),0));
+        const totPrf = document.getElementById('master-total-profit');
+        if (totPrf) totPrf.querySelector('.xc').textContent = fmt(d.daily_rows?.reduce((s,r)=>s+r.profit,0)||0);
+        const totNp = document.getElementById('master-total-needpay');
+        if (totNp) totNp.querySelector('.xc').textContent = fmt(Object.values(d.manual_daily||{}).reduce((s,r)=>s+(parseFloat(r['need_pay'])||0),0));
+        // Update currency column totals (row 3) — sum of manual_daily per column key
+        Object.keys(d.currency_cols || {}).forEach(k => {
+            const total = Object.values(d.manual_daily || {}).reduce((s, row) => s + (parseFloat(row[k]) || 0), 0);
+            const el = document.getElementById(`master-cur-total-${k}`);
+            if (el) el.querySelector('.xc').textContent = total ? fmt(total) : '';
+        });
+    } catch(e) {}
+}
+
 // ── Toggle Check Today ────────────────────────────────────────────────────────
 async function toggleToday(custId) {
     try {
         const d = await api('POST', route('toggleToday', custId));
         const btn = document.getElementById(`cust-today-btn-${custId}`);
-        if(btn){ btn.textContent = d.check_today ? 'TODAY ONLY' : 'ALL TIME'; btn.style.background=d.check_today?'#e67e22':'#1a5c38'; }
+        if(btn){ btn.textContent = d.check_today ? 'TODAY ONLY' : 'ALL TIME'; btn.style.background=d.check_today?'#e67e22':'#1a237e'; }
         await refreshCustHeader(custId);
     } catch(e) { alert(e.message); }
 }
@@ -1303,7 +1437,7 @@ function initPanelSplitter() {
         e.preventDefault();
         const startX = e.clientX;
         const startW = leftPanel.offsetWidth;
-        splitter.style.background = '#217346';
+        splitter.style.background = '#283593';
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
 
