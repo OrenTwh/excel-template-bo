@@ -9,8 +9,15 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Segoe UI',Arial,sans-serif;font-size:12px;background:#f0f0f0;overflow:hidden;user-select:none}
 
+/* ── BO nav bar ──────────────────────────────────────────────────────────── */
+#bo-nav{background:linear-gradient(to bottom,#e84040,#c43030);display:flex;height:62px;flex-shrink:0}
+#bo-nav .nav-btn{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:#fff;cursor:pointer;transition:background .15s;border-right:1px solid rgba(255,255,255,.15);text-decoration:none}
+#bo-nav .nav-btn:last-child{border-right:none}
+#bo-nav .nav-btn:hover{background:rgba(0,0,0,.15)}
+#bo-nav .nav-btn.active{background:rgba(0,0,0,.3)}
+
 /* ── Layout ─────────────────────────────────────────────────────────────── */
-#app{display:flex;flex-direction:column;height:100vh}
+#app{display:flex;flex-direction:column;height:calc(100vh - 62px)}
 #toolbar{background:#283593;color:#fff;padding:0 10px;display:flex;align-items:center;gap:8px;flex-shrink:0;height:38px}
 #toolbar .tb-title{font-weight:700;font-size:13px;margin-right:6px}
 #toolbar select,#toolbar input[type=number]{background:#1a237e;color:#fff;border:1px solid #3949ab;padding:1px 5px;font-size:12px;height:24px;border-radius:2px;outline:none}
@@ -131,6 +138,35 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(40,53,
 </style>
 </head>
 <body>
+
+<!-- BO nav bar -->
+<div id="bo-nav">
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Transactions">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M4 17h12m0 0l-4-4m4 4l-4 4"/></svg>
+    </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="FX Ledger">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Customers">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+    </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Cashflow">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Banks">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 2 7 22 7"/></svg>
+    </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Admin">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="2"/><path d="M14 11h4M14 15h4M2 10h20"/></svg>
+    </a>
+    <a class="nav-btn active" href="{{ route('fx.index') }}" title="FX Spreadsheet">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+    </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Menu">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </a>
+</div>
+
 <div id="app">
 
 <!-- toolbar -->
@@ -145,12 +181,12 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(40,53,
         <option value="{{ $m }}" {{ $m==date('n')?'selected':'' }}>{{ str_pad($m,2,'0',STR_PAD_LEFT) }}</option>
         @endfor
     </select>
+    <label style="font-size:11px">DATE#</label>
+    <input type="number" id="tb-day" value="{{ date('j') }}" min="1" max="31" style="width:42px" title="AH1 — day for PROFIT/ACTIVE columns">
     <button id="tb-go">↻ Load</button>
     <div class="sep"></div>
     <button id="tb-add-cust">+ Customer</button>
     <span id="tb-status">Ready</span>
-    <div class="sep"></div>
-    <a href="{{ route('bo.index') }}" style="background:#3949ab;color:#fff;border:none;padding:0 10px;font-size:12px;cursor:pointer;height:24px;border-radius:2px;display:inline-flex;align-items:center;text-decoration:none;" title="Back Office">⬅ BO</a>
 </div>
 
 <!-- formula bar -->
@@ -540,10 +576,22 @@ function loadSheet(sv) {
 }
 
 function getYM() {
-    return { year: +document.getElementById('tb-year').value, month: +document.getElementById('tb-month').value };
+    return {
+        year:  +document.getElementById('tb-year').value,
+        month: +document.getElementById('tb-month').value,
+        day:   +document.getElementById('tb-day').value,
+    };
 }
 
 document.getElementById('tb-go').addEventListener('click', () => { loaded.delete(activeSv); loadSheet(activeSv); });
+
+// DATE# change re-loads master right panel (AG/AH/AI columns depend on the selected day)
+document.getElementById('tb-day').addEventListener('change', () => {
+    if (activeSv === 'master' || loaded.has('master')) {
+        loaded.delete('master');
+        if (activeSv === 'master') loadMaster();
+    }
+});
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MASTER SHEET (总表)
@@ -590,7 +638,7 @@ function renderMaster(d) {
         <tr>
             <th class="rh">2</th>
             <td class="bg-green bold ctr" colspan="${2+colKeys.length+4}" data-r="2" data-ci="1">
-                <span class="xc ro" id="master-hdr-summary">NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)}</span>
+                <span class="xc ro" id="master-hdr-summary">NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)} &nbsp;|&nbsp; DATE#: ${d.day}</span>
             </td>
         </tr>
         <tr>
@@ -940,7 +988,7 @@ function txRowHtml(tx, idx, custId) {
         </td>`;
     };
 
-    const currencies = ['AUD','PGK','MYR','SGD','USDT','ABA USD','THB','VND'];
+    const currencies = ['AUD.S','AUD.F','PGK','MYR','SGD','USDT','ABA USD','THB','VND'];
     return `<tr data-tx-id="${txId}" data-cust-id="${custId}" data-row-idx="${idx}" data-r="${r}">
         <th class="rh">${r}</th>
         <td class="bg-yellow ctr" data-r="${r}" data-ci="0" data-cust-id="${custId}">
@@ -986,7 +1034,8 @@ function newTxRowHtml(custId, idx) {
                 return `<td class="${cls[ci]}" data-r="${r}" data-ci="${ci}" data-cust-id="${custId}" data-new-tx-field="currency">
                     <select class="currency-select">
                         <option value="">—</option>
-                        <option value="AUD">AUD</option>
+                        <option value="AUD.S">AUD.S</option>
+                        <option value="AUD.F">AUD.F</option>
                         <option value="PGK">PGK</option>
                         <option value="MYR">MYR</option>
                         <option value="SGD">SGD</option>
@@ -1310,7 +1359,7 @@ async function refreshMasterLeft() {
             if (rateTd) rateTd.querySelector('.xc').textContent = row.profit_rate ? (row.profit_rate * 100).toFixed(2) + '%' : '';
         });
         const hdr = document.getElementById('master-hdr-summary');
-        if (hdr) hdr.innerHTML = `NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)}`;
+        if (hdr) hdr.innerHTML = `NEEDPAY: ${fmt(d.need_pay)} &nbsp;|&nbsp; Net BUY: ${fmt(d.header?.net_buy||0)} &nbsp;|&nbsp; DATE#: ${d.day}`;
         const totBal = document.getElementById('master-total-bal');
         if (totBal) totBal.querySelector('.xc').textContent = fmt(Object.values(d.manual_daily||{}).reduce((s,r)=>s+(parseFloat(r['balance_myr'])||0),0));
         const totPrf = document.getElementById('master-total-profit');

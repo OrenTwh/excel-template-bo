@@ -8,395 +8,144 @@ use Illuminate\Support\Facades\DB;
 /**
  * FxSeeder
  *
- * Seeds dummy FX data following the relationship chain:
- *   FxCustomer → FxTransaction
- *   FxCustomer → FxArrangement
+ * Exact data extracted from public/wallet_accounting.xlsx.
  *
- * Run with:
- *   php artisan db:seed --class=FxSeeder
+ * Customers:   用户1, 用户2, 用户（3）
+ * Period:      May 2026
+ *
+ * Run:  php artisan db:seed --class=FxSeeder
+ * Safe to re-run — truncates all FX tables first.
  */
 class FxSeeder extends Seeder
 {
     public function run(): void
     {
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        DB::table('fx_arrangements')->truncate();
+        DB::table('fx_transactions')->truncate();
+        DB::table('fx_master_daily')->truncate();
+        DB::table('fx_customers')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
         $now = now();
 
         // =====================================================================
-        // 1. FX CUSTOMERS
+        // 1. CUSTOMERS  — exact names and opening balances (I1) from Excel
         // =====================================================================
-        $customerIds = [];
-        $customers = [
-            [ 'key' => 'alpha',   'name' => 'Alpha Trading Sdn Bhd',   'initial_balance' => 50000.00 ],
-            [ 'key' => 'beta',    'name' => 'Beta Exchange Co',         'initial_balance' => 30000.00 ],
-            [ 'key' => 'gamma',   'name' => 'Gamma Forex Enterprise',   'initial_balance' => 75000.00 ],
-            [ 'key' => 'delta',   'name' => 'Delta Money Services',     'initial_balance' => 20000.00 ],
-            [ 'key' => 'epsilon', 'name' => 'Epsilon Capital Group',    'initial_balance' => 100000.00 ],
+        $ids = [];
+        foreach ([
+            ['name' => '用户1',    'initial_balance' => 1586.00,  'check_today' => false],
+            ['name' => '用户2',    'initial_balance' => 5782.00,  'check_today' => false],
+            ['name' => '用户（3）', 'initial_balance' => 10954.00, 'check_today' => false],
+        ] as $c) {
+            $ids[$c['name']] = DB::table('fx_customers')->insertGetId([
+                'name'            => $c['name'],
+                'initial_balance' => $c['initial_balance'],
+                'status'          => 'active',
+                'check_today'     => $c['check_today'],
+                'created_at'      => $now,
+                'updated_at'      => $now,
+            ]);
+        }
+
+        $this->command->info('✔ Customers: ' . implode(', ', array_keys($ids)));
+
+        // =====================================================================
+        // 2. TRANSACTIONS  — exact rows from each user sheet (rows 7+)
+        //    Formulas:  myr_converted = rate * (amount_in - amount_out)
+        //               profit        = amount_in * (cost_rate - rate)
+        // =====================================================================
+        $txRows = [
+
+            // ── 用户1 (rows 7–11, all dated 2026-05-20) ───────────────────────
+            ['cust' => '用户1',    'date' => '2026-05-20', 'currency' => 'AUD.S',   'amount_in' => 1000,   'amount_out' => 0,    'rate' => 2.63,  'cost_rate' => 2.645, 'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户1',    'date' => '2026-05-20', 'currency' => 'PGK',     'amount_in' => 1500,   'amount_out' => 0,    'rate' => 0.80,  'cost_rate' => 0.82,  'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户1',    'date' => '2026-05-20', 'currency' => 'SGD',     'amount_in' => 1295,   'amount_out' => 0,    'rate' => 3.05,  'cost_rate' => 3.07,  'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户1',    'date' => '2026-05-20', 'currency' => 'AUD.F',   'amount_in' => 0,      'amount_out' => 300,  'rate' => 2.76,  'cost_rate' => 0,     'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户1',    'date' => '2026-05-20', 'currency' => 'AUD.F',   'amount_in' => 0,      'amount_out' => 500,  'rate' => 2.76,  'cost_rate' => 0,     'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+
+            // ── 用户2 (rows 7–11, all dated 2026-05-20) ───────────────────────
+            // MYR row (all zeros) is skipped — blank row in Excel
+            ['cust' => '用户2',    'date' => '2026-05-20', 'currency' => 'AUD.S',   'amount_in' => 1050,   'amount_out' => 0,    'rate' => 2.62,  'cost_rate' => 2.65,  'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户2',    'date' => '2026-05-20', 'currency' => 'USDT',    'amount_in' => 1800,   'amount_out' => 0,    'rate' => 3.965, 'cost_rate' => 3.975, 'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户2',    'date' => '2026-05-20', 'currency' => 'ABA USD', 'amount_in' => 3451.2, 'amount_out' => 0,    'rate' => 3.98,  'cost_rate' => 4.005, 'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户2',    'date' => '2026-05-20', 'currency' => 'AUD.F',   'amount_in' => 0,      'amount_out' => 2000, 'rate' => 2.78,  'cost_rate' => 0,     'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+
+            // ── 用户（3） (rows 7–11, all dated 2026-05-20) ─────────────────────
+            ['cust' => '用户（3）', 'date' => '2026-05-20', 'currency' => 'AUD.F',   'amount_in' => 0,      'amount_out' => 3000, 'rate' => 2.76,  'cost_rate' => 0,     'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户（3）', 'date' => '2026-05-20', 'currency' => 'PGK',     'amount_in' => 1500,   'amount_out' => 0,    'rate' => 0.805, 'cost_rate' => 0.82,  'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户（3）', 'date' => '2026-05-20', 'currency' => 'USDT',    'amount_in' => 5000,   'amount_out' => 0,    'rate' => 3.97,  'cost_rate' => 4.00,  'myr_out' => 0,    'myr_in' => 0,    'remark' => ''],
+            ['cust' => '用户（3）', 'date' => '2026-05-20', 'currency' => 'MYR',     'amount_in' => 0,      'amount_out' => 0,    'rate' => 0,     'cost_rate' => 0,     'myr_out' => 0,    'myr_in' => 7493, 'remark' => ''],
+            ['cust' => '用户（3）', 'date' => '2026-05-20', 'currency' => 'MYR',     'amount_in' => 0,      'amount_out' => 0,    'rate' => 0,     'cost_rate' => 0,     'myr_out' => 5793, 'myr_in' => 0,    'remark' => ''],
         ];
 
-        foreach ($customers as $customer) {
-            $key = $customer['key'];
-            unset($customer['key']);
+        foreach ($txRows as $row) {
+            $ai = (float) $row['amount_in'];
+            $ao = (float) $row['amount_out'];
+            $r  = (float) $row['rate'];
+            $cr = (float) $row['cost_rate'];
 
-            $customerIds[$key] = DB::table('fx_customers')->insertGetId(array_merge($customer, [
-                'status'      => 'active',
-                'check_today' => false,
+            DB::table('fx_transactions')->insert([
+                'fx_customer_id' => $ids[$row['cust']],
+                'date'           => $row['date'],
+                'currency'       => $row['currency'],
+                'amount_in'      => $ai,
+                'amount_out'     => $ao,
+                'rate'           => $r,
+                'myr_converted'  => round($r * ($ai - $ao), 2),
+                'myr_out'        => (float) $row['myr_out'],
+                'myr_in'         => (float) $row['myr_in'],
+                'remark'         => $row['remark'],
+                'cost_rate'      => $cr,
+                'profit'         => round($ai * ($cr - $r), 2),
+                'created_by'     => 1,
+                'created_at'     => $now,
+                'updated_at'     => $now,
+            ]);
+        }
+
+        $this->command->info('✔ Transactions: ' . count($txRows));
+
+        // No arrangements exist in the Excel (arrangement section was empty for all sheets)
+        $this->command->info('✔ Arrangements: 0 (none in Excel)');
+
+        // =====================================================================
+        // 3. FX MASTER DAILY  — exact rows from 总表 (cols C–L, U=need_pay, V=balance_myr)
+        //    Only rows with data are stored; the rest are left as null/0.
+        // =====================================================================
+        //  date       | sgd | thb | pgk | usdt | aud_slow | aud_fast | need_pay | balance_myr
+        $masterRows = [
+            ['date' => '2026-05-01', 'need_pay' => 10000, 'balance_myr' => 56435.03],
+            ['date' => '2026-05-02', 'need_pay' => 1000,  'balance_myr' => null],
+            ['date' => '2026-05-04', 'need_pay' => 10,    'balance_myr' => null],
+            ['date' => '2026-05-20', 'aud_slow'  => 2050, 'balance_myr' => null],
+        ];
+
+        foreach ($masterRows as $row) {
+            [$y, $m, $d] = explode('-', $row['date']);
+            DB::table('fx_master_daily')->insert([
+                'year'        => (int) $y,
+                'month'       => (int) $m,
+                'day'         => (int) $d,
+                'sgd'         => $row['sgd']      ?? 0,
+                'thb'         => $row['thb']      ?? 0,
+                'pgk'         => $row['pgk']      ?? 0,
+                'usdt'        => $row['usdt']     ?? 0,
+                'aud_slow'    => $row['aud_slow'] ?? 0,
+                'aud_fast'    => $row['aud_fast'] ?? 0,
+                'usd1'        => 0,
+                'usd2'        => 0,
+                'usd3'        => 0,
+                'usd4'        => 0,
+                'balance_myr' => $row['balance_myr'] ?? null,
+                'need_pay'    => $row['need_pay']    ?? null,
                 'created_at'  => $now,
                 'updated_at'  => $now,
-            ]));
+            ]);
         }
 
-        $this->command->info('✔ FX Customers seeded (' . count($customerIds) . ')');
-
-        // =====================================================================
-        // 2. FX TRANSACTIONS
-        //    myr_converted = rate * (amount_in - amount_out)
-        //    profit        = amount_in * (cost_rate - rate)
-        // =====================================================================
-        $transactions = [
-            // Alpha Trading — buys SGD
-            [
-                'fx_customer_id' => $customerIds['alpha'],
-                'date'           => '2026-04-03',
-                'currency'       => 'SGD',
-                'amount_in'      => 10000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 3.4500,
-                'cost_rate'      => 3.4200,
-                'myr_out'        => 0.00,
-                'myr_in'         => 34500.00,
-                'remark'         => 'April opening buy',
-            ],
-            [
-                'fx_customer_id' => $customerIds['alpha'],
-                'date'           => '2026-04-10',
-                'currency'       => 'SGD',
-                'amount_in'      => 0.00,
-                'amount_out'     => 5000.00,
-                'rate'           => 3.4600,
-                'cost_rate'      => 3.4200,
-                'myr_out'        => 17300.00,
-                'myr_in'         => 0.00,
-                'remark'         => 'Partial sell-back',
-            ],
-            [
-                'fx_customer_id' => $customerIds['alpha'],
-                'date'           => '2026-05-05',
-                'currency'       => 'USD',
-                'amount_in'      => 8000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 4.7200,
-                'cost_rate'      => 4.6900,
-                'myr_out'        => 0.00,
-                'myr_in'         => 37760.00,
-                'remark'         => 'USD purchase May',
-            ],
-
-            // Beta Exchange — THB transactions
-            [
-                'fx_customer_id' => $customerIds['beta'],
-                'date'           => '2026-04-07',
-                'currency'       => 'THB',
-                'amount_in'      => 200000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 0.1310,
-                'cost_rate'      => 0.1290,
-                'myr_out'        => 0.00,
-                'myr_in'         => 26200.00,
-                'remark'         => 'THB bulk buy',
-            ],
-            [
-                'fx_customer_id' => $customerIds['beta'],
-                'date'           => '2026-04-21',
-                'currency'       => 'THB',
-                'amount_in'      => 0.00,
-                'amount_out'     => 100000.00,
-                'rate'           => 0.1320,
-                'cost_rate'      => 0.1290,
-                'myr_out'        => 13200.00,
-                'myr_in'         => 0.00,
-                'remark'         => 'THB partial sell',
-            ],
-            [
-                'fx_customer_id' => $customerIds['beta'],
-                'date'           => '2026-05-12',
-                'currency'       => 'USDT',
-                'amount_in'      => 5000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 4.7100,
-                'cost_rate'      => 4.6800,
-                'myr_out'        => 0.00,
-                'myr_in'         => 23550.00,
-                'remark'         => 'USDT purchase',
-            ],
-
-            // Gamma Forex — mixed currencies
-            [
-                'fx_customer_id' => $customerIds['gamma'],
-                'date'           => '2026-04-02',
-                'currency'       => 'AUD',
-                'amount_in'      => 15000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 3.0500,
-                'cost_rate'      => 3.0100,
-                'myr_out'        => 0.00,
-                'myr_in'         => 45750.00,
-                'remark'         => 'AUD fast rate',
-            ],
-            [
-                'fx_customer_id' => $customerIds['gamma'],
-                'date'           => '2026-04-15',
-                'currency'       => 'USD',
-                'amount_in'      => 12000.00,
-                'amount_out'     => 2000.00,
-                'rate'           => 4.7300,
-                'cost_rate'      => 4.7000,
-                'myr_out'        => 9460.00,
-                'myr_in'         => 56760.00,
-                'remark'         => 'USD net position',
-            ],
-            [
-                'fx_customer_id' => $customerIds['gamma'],
-                'date'           => '2026-05-08',
-                'currency'       => 'SGD',
-                'amount_in'      => 20000.00,
-                'amount_out'     => 5000.00,
-                'rate'           => 3.4700,
-                'cost_rate'      => 3.4400,
-                'myr_out'        => 17350.00,
-                'myr_in'         => 69400.00,
-                'remark'         => 'SGD net trade May',
-            ],
-
-            // Delta Money Services
-            [
-                'fx_customer_id' => $customerIds['delta'],
-                'date'           => '2026-04-09',
-                'currency'       => 'SGD',
-                'amount_in'      => 5000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 3.4400,
-                'cost_rate'      => 3.4100,
-                'myr_out'        => 0.00,
-                'myr_in'         => 17200.00,
-                'remark'         => 'Small SGD purchase',
-            ],
-            [
-                'fx_customer_id' => $customerIds['delta'],
-                'date'           => '2026-05-01',
-                'currency'       => 'THB',
-                'amount_in'      => 80000.00,
-                'amount_out'     => 30000.00,
-                'rate'           => 0.1300,
-                'cost_rate'      => 0.1280,
-                'myr_out'        => 3900.00,
-                'myr_in'         => 10400.00,
-                'remark'         => 'THB net trade',
-            ],
-
-            // Epsilon Capital — large volumes
-            [
-                'fx_customer_id' => $customerIds['epsilon'],
-                'date'           => '2026-04-01',
-                'currency'       => 'USD',
-                'amount_in'      => 50000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 4.7000,
-                'cost_rate'      => 4.6700,
-                'myr_out'        => 0.00,
-                'myr_in'         => 235000.00,
-                'remark'         => 'USD bulk April opening',
-            ],
-            [
-                'fx_customer_id' => $customerIds['epsilon'],
-                'date'           => '2026-04-18',
-                'currency'       => 'SGD',
-                'amount_in'      => 30000.00,
-                'amount_out'     => 10000.00,
-                'rate'           => 3.4600,
-                'cost_rate'      => 3.4300,
-                'myr_out'        => 34600.00,
-                'myr_in'         => 103800.00,
-                'remark'         => 'SGD net mid-April',
-            ],
-            [
-                'fx_customer_id' => $customerIds['epsilon'],
-                'date'           => '2026-05-03',
-                'currency'       => 'USDT',
-                'amount_in'      => 20000.00,
-                'amount_out'     => 5000.00,
-                'rate'           => 4.7200,
-                'cost_rate'      => 4.6900,
-                'myr_out'        => 23600.00,
-                'myr_in'         => 94400.00,
-                'remark'         => 'USDT net May',
-            ],
-            [
-                'fx_customer_id' => $customerIds['epsilon'],
-                'date'           => '2026-05-14',
-                'currency'       => 'AUD',
-                'amount_in'      => 25000.00,
-                'amount_out'     => 0.00,
-                'rate'           => 3.0600,
-                'cost_rate'      => 3.0200,
-                'myr_out'        => 0.00,
-                'myr_in'         => 76500.00,
-                'remark'         => 'AUD slow rate May',
-            ],
-        ];
-
-        foreach ($transactions as $tx) {
-            $amountIn  = (float) $tx['amount_in'];
-            $amountOut = (float) $tx['amount_out'];
-            $rate      = (float) $tx['rate'];
-            $costRate  = (float) $tx['cost_rate'];
-
-            DB::table('fx_transactions')->insert(array_merge($tx, [
-                'myr_converted' => round($rate * ($amountIn - $amountOut), 2),
-                'profit'        => round($amountIn * ($costRate - $rate), 2),
-                'created_by'    => 1,
-                'created_at'    => $now,
-                'updated_at'    => $now,
-            ]));
-        }
-
-        $this->command->info('✔ FX Transactions seeded (' . count($transactions) . ')');
-
-        // =====================================================================
-        // 3. FX ARRANGEMENTS
-        // =====================================================================
-        $arrangements = [
-            // Alpha Trading
-            [
-                'fx_customer_id'   => $customerIds['alpha'],
-                'date'             => '2026-04-03',
-                'account_number'   => '1234-5678-9012',
-                'beneficiary_name' => 'Alpha Trading Sdn Bhd',
-                'bank'             => 'Maybank',
-                'arranging_amount' => 34500.00,
-                'done_amount'      => 34500.00,
-                'is_done'          => true,
-                'processed_by'     => 'Sarah',
-            ],
-            [
-                'fx_customer_id'   => $customerIds['alpha'],
-                'date'             => '2026-05-05',
-                'account_number'   => '1234-5678-9012',
-                'beneficiary_name' => 'Alpha Trading Sdn Bhd',
-                'bank'             => 'Maybank',
-                'arranging_amount' => 37760.00,
-                'done_amount'      => 20000.00,
-                'is_done'          => false,
-                'processed_by'     => 'Sarah',
-            ],
-
-            // Beta Exchange
-            [
-                'fx_customer_id'   => $customerIds['beta'],
-                'date'             => '2026-04-07',
-                'account_number'   => '9876-5432-1098',
-                'beneficiary_name' => 'Beta Exchange Co',
-                'bank'             => 'CIMB',
-                'arranging_amount' => 26200.00,
-                'done_amount'      => 26200.00,
-                'is_done'          => true,
-                'processed_by'     => 'James',
-            ],
-            [
-                'fx_customer_id'   => $customerIds['beta'],
-                'date'             => '2026-05-12',
-                'account_number'   => '9876-5432-1098',
-                'beneficiary_name' => 'Beta Exchange Co',
-                'bank'             => 'CIMB',
-                'arranging_amount' => 23550.00,
-                'done_amount'      => 0.00,
-                'is_done'          => false,
-                'processed_by'     => 'James',
-            ],
-
-            // Gamma Forex
-            [
-                'fx_customer_id'   => $customerIds['gamma'],
-                'date'             => '2026-04-02',
-                'account_number'   => '5566-7788-9900',
-                'beneficiary_name' => 'Gamma Forex Enterprise',
-                'bank'             => 'Public Bank',
-                'arranging_amount' => 45750.00,
-                'done_amount'      => 45750.00,
-                'is_done'          => true,
-                'processed_by'     => 'Lina',
-            ],
-            [
-                'fx_customer_id'   => $customerIds['gamma'],
-                'date'             => '2026-05-08',
-                'account_number'   => '5566-7788-9901',
-                'beneficiary_name' => 'Gamma Forex Enterprise',
-                'bank'             => 'Public Bank',
-                'arranging_amount' => 52050.00,
-                'done_amount'      => 30000.00,
-                'is_done'          => false,
-                'processed_by'     => 'Lina',
-            ],
-
-            // Delta Money Services
-            [
-                'fx_customer_id'   => $customerIds['delta'],
-                'date'             => '2026-04-09',
-                'account_number'   => '1122-3344-5566',
-                'beneficiary_name' => 'Delta Money Services',
-                'bank'             => 'RHB Bank',
-                'arranging_amount' => 17200.00,
-                'done_amount'      => 17200.00,
-                'is_done'          => true,
-                'processed_by'     => 'Ahmad',
-            ],
-
-            // Epsilon Capital
-            [
-                'fx_customer_id'   => $customerIds['epsilon'],
-                'date'             => '2026-04-01',
-                'account_number'   => '7788-9900-1122',
-                'beneficiary_name' => 'Epsilon Capital Group',
-                'bank'             => 'Hong Leong Bank',
-                'arranging_amount' => 235000.00,
-                'done_amount'      => 235000.00,
-                'is_done'          => true,
-                'processed_by'     => 'Rachel',
-            ],
-            [
-                'fx_customer_id'   => $customerIds['epsilon'],
-                'date'             => '2026-05-03',
-                'account_number'   => '7788-9900-1122',
-                'beneficiary_name' => 'Epsilon Capital Group',
-                'bank'             => 'Hong Leong Bank',
-                'arranging_amount' => 70800.00,
-                'done_amount'      => 50000.00,
-                'is_done'          => false,
-                'processed_by'     => 'Rachel',
-            ],
-            [
-                'fx_customer_id'   => $customerIds['epsilon'],
-                'date'             => '2026-05-14',
-                'account_number'   => '7788-9900-3344',
-                'beneficiary_name' => 'Epsilon Capital Group',
-                'bank'             => 'AmBank',
-                'arranging_amount' => 76500.00,
-                'done_amount'      => 0.00,
-                'is_done'          => false,
-                'processed_by'     => 'Rachel',
-            ],
-        ];
-
-        foreach ($arrangements as $arr) {
-            DB::table('fx_arrangements')->insert(array_merge($arr, [
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]));
-        }
-
-        $this->command->info('✔ FX Arrangements seeded (' . count($arrangements) . ')');
-
+        $this->command->info('✔ Master Daily: ' . count($masterRows) . ' rows (May 2026)');
         $this->command->info('');
-        $this->command->info('FxSeeder complete.');
-        $this->command->info('  5 customers | ' . count($transactions) . ' transactions | ' . count($arrangements) . ' arrangements');
+        $this->command->info('FxSeeder complete — exact data from wallet_accounting.xlsx');
     }
 }

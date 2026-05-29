@@ -25,18 +25,23 @@ class FxController extends Controller
     {
         $year  = (int) ($request->year  ?? now()->year);
         $month = (int) ($request->month ?? now()->month);
-        $date  = $request->filled('date') ? Carbon::parse($request->date) : null;
+        // AH1 — DATE# day picker; defaults to today's day when viewing the current month, else day 1
+        $day   = $request->filled('day')
+            ? (int) $request->day
+            : (($year === now()->year && $month === now()->month) ? now()->day : 1);
+        $day   = max(1, min($day, Carbon::create($year, $month, 1)->daysInMonth));
+        $date  = Carbon::create($year, $month, $day);
 
         return response()->json([
             'daily_rows'     => $this->fx->masterDailyRows($year, $month),
-            'manual_daily'   => FxMasterDaily::forMonth($year, $month),   // manually-entered cells
+            'manual_daily'   => FxMasterDaily::forMonth($year, $month),
             'customer_rows'  => $this->fx->masterCustomerRows($date),
-            'currency_totals'=> $this->fx->monthlyCurrencyTotals($year, $month),
             'header'         => $this->fx->masterHeaderTotals(),
             'need_pay'       => $this->fx->totalNeedPay(),
             'currency_cols'  => FxMasterDaily::$currencyCols,
             'year'           => $year,
             'month'          => $month,
+            'day'            => $day,
         ]);
     }
 
@@ -78,7 +83,7 @@ class FxController extends Controller
         $year     = $request->filled('year')  ? (int) $request->year  : null;
         $month    = $request->filled('month') ? (int) $request->month : null;
 
-        $summary  = $this->fx->customerSummary($customer, $year, $month);
+        $summary  = $this->fx->customerSummary($customer);
 
         $txQuery  = FxTransaction::where('fx_customer_id', $id)->orderBy('date')->orderBy('id');
         $arrQuery = FxArrangement::where('fx_customer_id', $id)->orderBy('date')->orderBy('id');
@@ -148,7 +153,10 @@ class FxController extends Controller
 
     public function customerDelete(int $id)
     {
-        FxCustomer::findOrFail($id)->delete();
+        $customer = FxCustomer::findOrFail($id);
+        $customer->transactions()->delete();
+        $customer->arrangements()->delete();
+        $customer->delete();
         return response()->json(['success' => true]);
     }
 

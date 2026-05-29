@@ -15,8 +15,9 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call( [
-            AdministratorSeeder::class,
-            CountrySeeder::class,
+            AdministratorSeeder::class,   // roles + developer admin account (required for login)
+            CountrySeeder::class,          // countries reference table
+            FxSeeder::class,               // FX customers, transactions, arrangements, master daily
             // Run separately: php artisan db:seed --class=DummyDataSeeder
             // DummyDataSeeder::class,
         ] );
