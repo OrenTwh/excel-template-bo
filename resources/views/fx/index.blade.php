@@ -159,6 +159,9 @@ th.resizable .col-rz:hover,th.resizable .col-rz.rz-active{background:rgba(40,53,
     <a class="nav-btn" href="{{ route('bo.index') }}" title="Admin">
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="2"/><path d="M14 11h4M14 15h4M2 10h20"/></svg>
     </a>
+    <a class="nav-btn" href="{{ route('bo.index') }}" title="Users">
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><line x1="11.5" y1="12" x2="22" y2="2"/><line x1="19" y1="5" x2="21" y2="7"/><line x1="15" y1="9" x2="17" y2="11"/></svg>
+    </a>
     <a class="nav-btn active" href="{{ route('fx.index') }}" title="FX Spreadsheet">
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
     </a>
@@ -583,7 +586,7 @@ function getYM() {
     };
 }
 
-document.getElementById('tb-go').addEventListener('click', () => { loaded.delete(activeSv); loadSheet(activeSv); });
+document.getElementById('tb-go').addEventListener('click', () => { loaded.clear(); loadSheet(activeSv); });
 
 // DATE# change re-loads master right panel (AG/AH/AI columns depend on the selected day)
 document.getElementById('tb-day').addEventListener('change', () => {

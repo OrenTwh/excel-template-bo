@@ -70,5 +70,6 @@ class Kernel extends HttpKernel
         'api_version' => \App\Http\Middleware\APIVersion::class,
         'checkMFA' => \App\Http\Middleware\CheckMFA::class,
         'vending.auth' => \App\Http\Middleware\VerifyVendingMachineKey::class,
+        'portal.auth'  => \App\Http\Middleware\PortalAuth::class,
     ];
 }

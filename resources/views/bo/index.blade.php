@@ -359,6 +359,10 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
         <!-- id card icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="8" cy="13" r="2"/><path d="M14 11h4M14 15h4M2 10h20"/></svg>
     </button>
+    <button class="nav-btn" data-page="users"         title="Users">
+        <!-- key icon -->
+        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><line x1="11.5" y1="12" x2="22" y2="2"/><line x1="19" y1="5" x2="21" y2="7"/><line x1="15" y1="9" x2="17" y2="11"/></svg>
+    </button>
     <a class="nav-btn" href="{{ route('fx.index') }}" title="FX Spreadsheet" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">
         <!-- table/spreadsheet icon -->
         <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
@@ -796,6 +800,53 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: USERS                                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="page-users" class="page-section">
+    <div class="admin-filter-wrap filter-wrap">
+        <div class="filter-row">
+            <span class="filter-label">Search</span>
+            <span class="filter-colon">:</span>
+            <input id="usr-search" class="filter-input" type="text" placeholder="Username / Name / Email">
+        </div>
+        <div class="filter-row">
+            <span class="filter-label">Status</span>
+            <span class="filter-colon">:</span>
+            <select id="usr-status" class="filter-input">
+                <option value="all">ALL</option>
+                <option value="10" selected>ACTIVE</option>
+                <option value="20">INACTIVE</option>
+            </select>
+        </div>
+    </div>
+    <div class="admin-btn-row">
+        <button class="btn-green" id="usr-search-btn" style="flex:1;">SEARCH</button>
+        <button class="btn-orange" id="usr-create-btn" style="flex:1;">CREATE</button>
+    </div>
+    <div style="overflow-x:auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Linked Customer</th>
+                    <th>Created</th>
+                    <th style="text-align:right;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="usr-tbody">
+                <tr><td colspan="9" style="text-align:center;color:#999;padding:20px;">Click SEARCH to load.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="usr-pagination" style="padding:6px 8px;font-size:12px;color:#555;"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- PAGE: CUSTOMERS                                                          -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <div id="page-customers" class="page-section">
@@ -1023,6 +1074,51 @@ select.filter-input { appearance: none; background-image: url("data:image/svg+xm
     </div>
 </div>
 
+<!-- User Assign Customers Modal -->
+<div class="modal-overlay" id="modal-user-assign">
+    <div class="modal-box" style="width:460px;">
+        <div class="modal-header">
+            <span id="modal-user-assign-title">Assign Customers</span>
+            <button class="modal-close" data-close="modal-user-assign">&times;</button>
+        </div>
+        <div class="modal-body" style="padding:0;max-height:420px;overflow-y:auto;" id="mua-list">
+            <div style="text-align:center;color:#999;padding:20px;">Loading…</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" data-close="modal-user-assign">Cancel</button>
+            <button class="btn-save" id="modal-user-assign-save">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- User Create/Edit Modal -->
+<div class="modal-overlay" id="modal-user">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span id="modal-user-title">Create User</span>
+            <button class="modal-close" data-close="modal-user">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="mu-id">
+            <div class="modal-field"><label>Username *</label><input type="text" id="mu-username"></div>
+            <div class="modal-field"><label>Full Name *</label><input type="text" id="mu-fullname"></div>
+            <div class="modal-field"><label>Email</label><input type="email" id="mu-email"></div>
+            <div class="modal-field"><label>Phone Number</label><input type="text" id="mu-phone"></div>
+            <div class="modal-field"><label>Password <span id="mu-pw-hint" style="color:#aaa;font-size:11px;">(leave blank to keep)</span></label><input type="password" id="mu-password"></div>
+            <div class="modal-field"><label>Status</label>
+                <select id="mu-status" style="height:30px;width:100%;border:1px solid #ccc;padding:3px 6px;font-size:12px;">
+                    <option value="10">ACTIVE</option>
+                    <option value="20">INACTIVE</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" data-close="modal-user">Cancel</button>
+            <button class="btn-save" id="modal-user-save">Save</button>
+        </div>
+    </div>
+</div>
+
 <!-- Bank History Modal -->
 <div class="modal-overlay" id="modal-bank-history">
     <div class="modal-box" style="width:700px;">
@@ -1127,6 +1223,7 @@ document.querySelectorAll('#nav-bar .nav-btn').forEach(btn => {
         if (page === 'banktx')    initCustomerTx();
         if (page === 'cashflow')  loadCashflow();
         if (page === 'customers') initBoCustomers();
+        // users: manual SEARCH trigger, no auto-load
     });
 });
 
@@ -1948,6 +2045,142 @@ document.getElementById('bc-save').addEventListener('click', async () => {
         allCustomers = await api('GET', 'customers');
         refreshCustomerDropdown();
         renderBoCustomers();
+    } catch(e) { alert('Error: ' + e.message); }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('usr-search-btn').addEventListener('click', () => loadUsers(1));
+document.getElementById('usr-create-btn').addEventListener('click', () => {
+    document.getElementById('modal-user-title').textContent = 'Create User';
+    document.getElementById('mu-id').value = '';
+    document.getElementById('mu-pw-hint').style.display = 'none';
+    ['mu-username','mu-fullname','mu-email','mu-phone','mu-password'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('mu-username').disabled = false;
+    document.getElementById('mu-status').value = '10';
+    openModal('modal-user');
+});
+
+async function loadUsers(page = 1) {
+    const params = {
+        search: document.getElementById('usr-search').value,
+        status: document.getElementById('usr-status').value,
+        page,
+    };
+    try {
+        const d = await api('GET', 'users', params);
+        const tbody = document.getElementById('usr-tbody');
+        if (!d.data.length) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#999;padding:20px;">No users found.</td></tr>`;
+            renderPagination('usr-pagination', 1, 1, loadUsers);
+            return;
+        }
+        tbody.innerHTML = d.data.map(u => {
+            const active = u.status == 10;
+            const badge  = `<span style="display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:bold;background:${active?'#e8f5e9':'#fce4ec'};color:${active?'#2e7d32':'#c62828'}">${active?'ACTIVE':'INACTIVE'}</span>`;
+            const linked = u.fx_customer ? u.fx_customer : `<span style="color:#aaa;">—</span>`;
+            return `<tr>
+                <td>${u.id}</td>
+                <td>${u.username ?? ''}</td>
+                <td>${u.fullname ?? ''}</td>
+                <td>${u.email ?? ''}</td>
+                <td>${u.phone_number ?? ''}</td>
+                <td>${badge}</td>
+                <td>${linked}</td>
+                <td>${(u.created_at ?? '').substring(0,10)}</td>
+                <td style="text-align:right;">
+                    <button class="tbl-btn" onclick="userAssign(${u.id}, '${(u.username ?? '').replace(/'/g,"\\'")}')">ASSIGN</button>
+                    <button class="tbl-btn" onclick="userEdit(${JSON.stringify(u).replace(/"/g,'&quot;')})">EDIT</button>
+                    <button class="tbl-btn" style="color:#c00;border-color:#c00;" onclick="userDelete(${u.id}, '${(u.username ?? '').replace(/'/g,"\\'")}')">DELETE</button>
+                </td>
+            </tr>`;
+        }).join('');
+        renderPagination('usr-pagination', d.current_page, d.last_page, loadUsers);
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+let assignUserId = null;
+
+async function userAssign(id, username) {
+    assignUserId = id;
+    document.getElementById('modal-user-assign-title').textContent = `Assign Customers — ${username}`;
+    document.getElementById('mua-list').innerHTML = `<div style="text-align:center;color:#999;padding:20px;">Loading…</div>`;
+    openModal('modal-user-assign');
+    try {
+        const customers = await api('GET', `users/${id}/customers`);
+        if (!customers.length) {
+            document.getElementById('mua-list').innerHTML = `<div style="text-align:center;color:#999;padding:20px;">No customers found.</div>`;
+            return;
+        }
+        document.getElementById('mua-list').innerHTML = customers.map(c => `
+            <label style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:12px;">
+                <input type="checkbox" value="${c.id}" ${c.assigned ? 'checked' : ''} style="width:15px;height:15px;flex-shrink:0;">
+                <span>${c.name}</span>
+            </label>`).join('');
+    } catch(e) {
+        document.getElementById('mua-list').innerHTML = `<div style="text-align:center;color:#c00;padding:20px;">${e.message}</div>`;
+    }
+}
+
+document.getElementById('modal-user-assign-save').addEventListener('click', async () => {
+    if (!assignUserId) return;
+    const ids = [...document.querySelectorAll('#mua-list input[type=checkbox]:checked')].map(cb => parseInt(cb.value));
+    try {
+        await api('PUT', `users/${assignUserId}/customers`, { customer_ids: ids });
+        closeModal('modal-user-assign');
+        loadUsers(1);
+    } catch(e) { alert('Error: ' + e.message); }
+});
+
+function userEdit(u) {
+    document.getElementById('modal-user-title').textContent = 'Edit User';
+    document.getElementById('mu-id').value              = u.id;
+    document.getElementById('mu-username').value        = u.username ?? '';
+    document.getElementById('mu-username').disabled     = true;
+    document.getElementById('mu-fullname').value        = u.fullname ?? '';
+    document.getElementById('mu-email').value           = u.email ?? '';
+    document.getElementById('mu-phone').value           = u.phone_number ?? '';
+    document.getElementById('mu-password').value        = '';
+    document.getElementById('mu-pw-hint').style.display = '';
+    document.getElementById('mu-status').value          = String(u.status ?? '10');
+    openModal('modal-user');
+}
+
+async function userDelete(id, username) {
+    if (!confirm(`Delete user "${username}"? This cannot be undone.`)) return;
+    try {
+        await api('DELETE', `users/${id}`);
+        loadUsers(1);
+    } catch(e) { alert('Error: ' + e.message); }
+}
+
+document.getElementById('modal-user-save').addEventListener('click', async () => {
+    const id       = document.getElementById('mu-id').value;
+    const username = document.getElementById('mu-username').value.trim();
+    const fullname = document.getElementById('mu-fullname').value.trim();
+    if (!username) { alert('Username is required'); return; }
+    if (!fullname) { alert('Full Name is required'); return; }
+    const body = {
+        username,
+        fullname,
+        email:        document.getElementById('mu-email').value,
+        phone_number: document.getElementById('mu-phone').value,
+        password:     document.getElementById('mu-password').value,
+        status:       document.getElementById('mu-status').value,
+    };
+    try {
+        if (id) {
+            await api('PUT', `users/${id}`, body);
+        } else {
+            await api('POST', 'users', body);
+        }
+        closeModal('modal-user');
+        loadUsers(1);
     } catch(e) { alert('Error: ' + e.message); }
 });
 

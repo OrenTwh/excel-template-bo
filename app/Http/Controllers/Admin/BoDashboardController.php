@@ -17,6 +17,7 @@ use App\Models\{
     Role,
     FxCustomer,
     FxTransaction,
+    User,
 };
 
 class BoDashboardController extends Controller
@@ -659,6 +660,126 @@ class BoDashboardController extends Controller
         ]);
 
         return response()->json(['success' => true, 'data' => $tx->fresh()]);
+    }
+
+    // ─── Users ───────────────────────────────────────────────────────────────────
+
+    public function users(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('username', 'like', "%{$s}%")
+                  ->orWhere('fullname', 'like', "%{$s}%")
+                  ->orWhere('email',    'like', "%{$s}%");
+            });
+        }
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $paginated = $query->select('id', 'username', 'fullname', 'email', 'phone_number', 'status', 'created_at')
+            ->orderBy('id', 'desc')
+            ->paginate(50);
+
+        $linkedMap = FxCustomer::whereNotNull('user_id')
+            ->whereIn('user_id', $paginated->pluck('id'))
+            ->pluck('name', 'user_id');
+
+        $paginated->getCollection()->transform(function ($u) use ($linkedMap) {
+            $u->fx_customer = $linkedMap[$u->id] ?? null;
+            return $u;
+        });
+
+        return response()->json($paginated);
+    }
+
+    public function userStore(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|max:100|unique:users,username',
+            'fullname' => 'required|string|max:255',
+            'email'    => 'nullable|email|max:255',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $user = User::create([
+            'username'     => $request->username,
+            'fullname'     => $request->fullname,
+            'email'        => $request->email ?? ($request->username . '@fx.local'),
+            'phone_number' => $request->phone_number,
+            'password'     => Hash::make($request->password),
+            'status'       => $request->status ?? 10,
+        ]);
+
+        return response()->json(['success' => true, 'data' => $user]);
+    }
+
+    public function userUpdate(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'fullname' => 'required|string|max:255',
+            'email'    => 'nullable|email|max:255',
+        ]);
+
+        $data = [
+            'fullname'     => $request->fullname,
+            'email'        => $request->email,
+            'phone_number' => $request->phone_number,
+            'status'       => $request->status ?? $user->status,
+        ];
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function userDelete($id)
+    {
+        User::findOrFail($id)->delete();
+        return response()->json(['success' => true]);
+    }
+
+    public function userCustomers(Request $request, $id)
+    {
+        User::findOrFail($id);
+        $all = FxCustomer::orderBy('name')->get(['id', 'name', 'user_id']);
+
+        return response()->json($all->map(fn($c) => [
+            'id'       => $c->id,
+            'name'     => $c->name,
+            'assigned' => (int) $c->user_id === (int) $id,
+        ]));
+    }
+
+    public function userAssignCustomers(Request $request, $id)
+    {
+        $request->validate([
+            'customer_ids'   => 'array',
+            'customer_ids.*' => 'integer|exists:fx_customers,id',
+        ]);
+
+        User::findOrFail($id);
+        $customerIds = $request->customer_ids ?? [];
+
+        // Remove this user from customers that were deselected
+        FxCustomer::where('user_id', $id)
+            ->whereNotIn('id', $customerIds)
+            ->update(['user_id' => null]);
+
+        // Assign selected customers to this user
+        if (!empty($customerIds)) {
+            FxCustomer::whereIn('id', $customerIds)->update(['user_id' => $id]);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     // ─── Roles ────────────────────────────────────────────────────────────────────

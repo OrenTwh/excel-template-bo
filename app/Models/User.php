@@ -5,7 +5,7 @@ namespace App\Models;
 use DateTimeInterface;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -15,7 +15,7 @@ use Helper;
 
 use Carbon\Carbon;
 
-class User extends Model
+class User extends Authenticatable
 {
     use HasFactory, LogsActivity, HasApiTokens;
 
@@ -59,6 +59,11 @@ class User extends Model
         'nationality',
         'identification_number',
     ];
+
+    public function fxCustomers()
+    {
+        return $this->hasMany(FxCustomer::class, 'user_id');
+    }
 
     public function wallets()
     {

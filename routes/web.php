@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Portal\PortalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +68,19 @@ Route::get('/register', function (Request $request) {
         'agent' => $userAgent,
     ]);
 
+});
+
+// ── Customer Portal (web guard → users table) ──────────────────────────────
+Route::prefix('portal')->name('portal.')->group(function () {
+    Route::get( 'login',  [PortalController::class, 'showLogin'])->name('login');
+    Route::post('login',  [PortalController::class, 'login']    )->name('login.post');
+    Route::post('logout', [PortalController::class, 'logout']   )->name('logout');
+
+    Route::middleware('portal.auth')->group(function () {
+        Route::get('/',              [PortalController::class, 'index']         )->name('index');
+        Route::get('my-customers',   [PortalController::class, 'myCustomers']   )->name('customers');
+        Route::get('customers/{id}', [PortalController::class, 'customerDetail'])->name('customer.detail');
+    });
 });
 
 // This is admin route

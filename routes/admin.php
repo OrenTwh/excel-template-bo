@@ -157,6 +157,14 @@ Route::prefix( config( 'services.url.admin_path' ) )->group( function() {
                 Route::post( 'admins',                     [ BoDashboardController::class, 'adminStore'           ] )->name( 'bo.admins.store' );
                 Route::put(  'admins/{id}',                [ BoDashboardController::class, 'adminUpdate'          ] )->name( 'bo.admins.update' );
 
+                // Users
+                Route::get(   'users',                    [ BoDashboardController::class, 'users'               ] )->name( 'bo.users' );
+                Route::post(  'users',                    [ BoDashboardController::class, 'userStore'            ] )->name( 'bo.users.store' );
+                Route::put(   'users/{id}',               [ BoDashboardController::class, 'userUpdate'           ] )->name( 'bo.users.update' );
+                Route::delete('users/{id}',               [ BoDashboardController::class, 'userDelete'           ] )->name( 'bo.users.delete' );
+                Route::get(   'users/{id}/customers',     [ BoDashboardController::class, 'userCustomers'        ] )->name( 'bo.user.customers' );
+                Route::put(   'users/{id}/customers',     [ BoDashboardController::class, 'userAssignCustomers'  ] )->name( 'bo.user.customers.assign' );
+
                 // Menu / settings
                 Route::post( 'update-password',            [ BoDashboardController::class, 'updatePassword'       ] )->name( 'bo.update_password' );
                 Route::post( 'logout',                     [ BoDashboardController::class, 'logout'               ] )->name( 'bo.logout' );
